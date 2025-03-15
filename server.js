@@ -6,15 +6,15 @@ const multer = require("multer"); // 파일 업로드
 const XLSX = require("xlsx");
 const basicAuth = require('express-basic-auth'); // 기본 인증 추가
 
-// 비밀번호 인증 설정
-app.use(basicAuth({
-    users: { 'BBIOK': 'Bruker_2025' },  // 사용자명과 비밀번호 설정
-    challenge: true,  // 브라우저에서 로그인 요청
-    unauthorizedResponse: 'Unauthorized'  // 인증 실패 시 응답 메시지
-}));
-
 const app = express();
 const PORT = 5000;
+
+// 비밀번호 인증 설정
+app.use(basicAuth({
+  users: { 'BBIOK': 'Bruker_2025' },  // 사용자명과 비밀번호 설정
+  challenge: true,  // 브라우저에서 로그인 요청
+  unauthorizedResponse: 'Unauthorized'  // 인증 실패 시 응답 메시지
+}));
 
 // 📌 CORS 설정 (모든 도메인 허용)
 app.use(cors());
