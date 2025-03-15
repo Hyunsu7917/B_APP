@@ -1,17 +1,13 @@
 import axios from 'axios';
 
-// Axios 인스턴스 생성 (공통 설정)
+// 기본 Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: 'https://bkh-app.onrender.com', // 백엔드 서버 주소
+  baseURL: 'https://bkh-app.onrender.com',
   headers: {
     'Content-Type': 'application/json',
-  },
-  auth: {
-    username: 'BBIOK',       // 아이디
-    password: 'Bruker_2025', // 비밀번호
-  },
+    'Authorization': 'Basic ' + btoa('BBIOK:Bruker_2025') // 인증 추가
+  }
 });
-
 export default api;
 
 import api from './api';
@@ -55,4 +51,16 @@ const uploadExcel = async (file) => {
       console.error('업로드 실패:', error);
     }
   };
+  const testApiCall = async () => {
+    try {
+      const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
+      console.log('응답:', response);
+    } catch (error) {
+      console.error('API 요청 실패:', error.response ? error.response.data : error.message);
+    }
+  };
+  
+  useEffect(() => {
+    testApiCall();
+  }, []);
   
