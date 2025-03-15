@@ -4,25 +4,42 @@ import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
+import { Alert } from 'react-native';
 
-export const downloadExcel = async () => {
+
+// ✅ ArrayBuffer → Base64 변환 함수
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
+const downloadExcel = async () => {
   try {
-    const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
+    const response = await api.get('/assets/site.xlsx', { responseType: 'arraybuffer' });
 
-    // 🔴 응답을 확인하는 로그 추가 (여기서 response를 확인해야 함)
     console.log('응답:', response);
+    
+    const base64Data = arrayBufferToBase64(response.data);
 
     const fileUri = `${FileSystem.documentDirectory}site.xlsx`;
-    await FileSystem.writeAsStringAsync(fileUri, response.data, {
-      encoding: FileSystem.EncodingType.Base64
+
+    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+      encoding: FileSystem.EncodingType.Base64,
     });
 
-    Alert.alert('다운로드 완료!', '파일이 저장되었습니다.');
+    console.log('다운로드 성공!', fileUri);
+    Alert.alert('다운로드 완료!', '파일이 저장되었습니다.');  // 🔹 여기서 Alert 사용
   } catch (error) {
     console.error('엑셀 다운로드 실패:', error);
-    Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');
+    Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');  // 🔹 여기서도 Alert 사용
   }
 };
+
 export const uploadExcel = async (file) => {
   const formData = new FormData();
   formData.append('file', {
