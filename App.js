@@ -214,6 +214,11 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    console.log('✅ useEffect 실행됨: downloadExcel() 호출');
+    downloadExcel();
+  }, []);
+
   const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
   useEffect(() => {
     if (screen === "final") {

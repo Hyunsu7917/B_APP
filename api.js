@@ -2,15 +2,13 @@ import axios from 'axios';
 
 // 기본 Axios 인스턴스 생성
 const api = axios.create({
-    baseURL: process.env.NODE_ENV === 'development'
-      ? 'http://10.0.2.2:5000'  // 개발 환경 (에뮬레이터)
-      : 'https://bkh-app.onrender.com', // 배포 환경 (동료들도 접근 가능)
+    baseURL: 'https://bkh-app.onrender.com', // 🔹 Render 서버를 바라보도록 설정
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + btoa('BBIOK:Bruker_2025') // 인증 추가
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + btoa('BBIOK:Bruker_2025') // 🔹 인증 추가 (필요시)
     }
-  });
-  
+});
+
   
 export default api;
 
@@ -19,22 +17,7 @@ import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
-const downloadExcel = async () => {
-    try {
-      const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
-  
-      const fileUri = `${FileSystem.documentDirectory}site.xlsx`;
-      await FileSystem.writeAsStringAsync(fileUri, response.data, {
-        encoding: FileSystem.EncodingType.Base64
-      });
-  
-      Alert.alert('다운로드 완료!', '파일이 저장되었습니다.');
-    } catch (error) {
-      console.error('엑셀 다운로드 실패:', error);
-      Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');
-    }
-  };
-  
+ 
 
 useEffect(() => {
   downloadExcel();
