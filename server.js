@@ -16,8 +16,14 @@ app.use(basicAuth({
   unauthorizedResponse: 'Unauthorized'  // 인증 실패 시 응답 메시지
 }));
 
-app.get('/', (req, res) => {
-  res.send('서버가 정상적으로 작동 중입니다! 🚀');
+app.get("/download-excel", (req, res) => {
+  const filePath = path.join(__dirname, "assets", "site.xlsx");
+  res.download(filePath, "site.xlsx", (err) => {
+      if (err) {
+          console.error("❌ 파일 다운로드 중 오류 발생:", err);
+          res.status(500).send("파일을 다운로드할 수 없습니다.");
+      }
+  });
 });
 
 // 📌 CORS 설정 (모든 도메인 허용)
@@ -89,6 +95,6 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
 // 📌 서버 실행
 app.listen(PORT, () => {
-  console.log(`✅ 서버가 실행 중: https://bkh-app.onrender.com`);
+  console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
 });
 

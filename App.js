@@ -289,9 +289,34 @@ export default function App() {
   };
 
   useEffect(() => {
-    console.log('✅ useEffect 실행됨: downloadExcel() 호출');
-    downloadExcel();
+    console.log("🟢 useEffect 실행됨: downloadExcel() 호출");
+
+    const downloadExcel = async () => {
+        try {
+            console.log("🟢 Excel 파일 다운로드 시작");
+
+            const response = await fetch("https://bkh-app.onrender.com/download-excel");
+            if (!response.ok) throw new Error("파일을 가져올 수 없습니다.");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "site.xlsx"; // 파일명 설정
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            console.log("✅ Excel 파일 다운로드 성공!");
+        } catch (error) {
+            console.error("❌ Excel 파일 다운로드 실패:", error);
+        }
+    };
+
+    downloadExcel(); // ✅ 여기서 downloadExcel 실행
+
   }, []);
+
 
   const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
   useEffect(() => {
