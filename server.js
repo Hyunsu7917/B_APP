@@ -16,6 +16,10 @@ app.use(basicAuth({
   unauthorizedResponse: 'Unauthorized'  // 인증 실패 시 응답 메시지
 }));
 
+app.get('/', (req, res) => {
+  res.send('서버가 정상적으로 작동 중입니다! 🚀');
+});
+
 // 📌 CORS 설정 (모든 도메인 허용)
 app.use(cors());
 app.use(express.json());
