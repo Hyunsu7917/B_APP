@@ -10,13 +10,13 @@ const app = express();
 const PORT = 5000;
 
 const corsOptions = {
-  origin: "*", // 모든 도메인 허용 (보안 문제 없으면 특정 도메인으로 제한 가능)
+  origin: "*", // 모든 도메인 허용
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
   optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
 
 // 비밀번호 인증 설정
 app.use(basicAuth({
@@ -56,13 +56,15 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get("/download-excel", (req, res) => {
   const filePath = path.join(__dirname, "assets", "site.xlsx");
-  res.download(filePath, "site.xlsx", (err) => {
+
+  res.sendFile(filePath, (err) => {
     if (err) {
       console.error("❌ 파일 다운로드 중 오류 발생:", err);
       res.status(500).send("파일을 다운로드할 수 없습니다.");
     }
   });
 });
+
 
 
 // 📌 요청 로그 출력 (디버깅용)
