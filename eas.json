@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 15.0.15",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

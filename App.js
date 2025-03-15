@@ -435,8 +435,6 @@ export default function App() {
           <ScrollView 
             style={{ flex: 1, width: "100%" }}
             contentContainerStyle={{
-              flexGrow: 1,
-              alignItems: "center",
               justifyContent: "flex-start", // 내용이 위쪽에 정렬되도록 설정
               paddingVertical: 20,
             }}
@@ -444,14 +442,14 @@ export default function App() {
             <Text style={styles.title}>Final Data</Text>
 
             {magnetData.length > 0 ? (
-              <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600 }]}>
-                <ScrollView style={{ maxHeight: 600 }}>
+              <View style={[styles.table, { width: "80%", maxWidth: 500 }]}>
+                {/* ✅ 내부 ScrollView에 flex 설정 및 nestedScrollEnabled 추가 */}
+                <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
                   {Object.entries(magnetData[0]).map(([key, value], index) => (
                     <View key={index} style={styles.row}>
                       <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
                       <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
                     </View>
-                  
                   ))}
                 </ScrollView>
               </View>
@@ -466,6 +464,7 @@ export default function App() {
           </ScrollView>
         </View>
       )}
+
 
 
     </View>
