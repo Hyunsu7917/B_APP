@@ -21,8 +21,25 @@ app.get('/', (req, res) => {
 });
 
 // 📌 CORS 설정 (모든 도메인 허용)
-app.use(cors());
+app.use(cors({
+  origin: '*',  // 필요하면 특정 도메인으로 변경 가능 (예: "http://localhost:8081")
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(cors({
+  origin: ["http://localhost:8081", "https://bkh-app.onrender.com"], // 허용할 도메인 추가
+  methods: ["GET", "POST"], // 허용할 HTTP 메서드
+  allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더
+  credentials: true // 인증 정보 포함 허용
+}));
+
+// JSON 요청을 처리하기 위한 미들웨어
 app.use(express.json());
+
+// 서버 정상 동작 확인
+app.get("/", (req, res) => {
+    res.send("🚀 서버가 정상적으로 작동 중입니다!");
+});
 
 // 📌 정적 파일 제공 (엑셀 파일 포함)
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));

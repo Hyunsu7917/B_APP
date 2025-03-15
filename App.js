@@ -6,7 +6,6 @@ import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 import { Alert } from 'react-native';
 import * as Updates from "expo-updates";
-import { Alert } from "react-native";
 
 const checkForUpdates = async () => {
   try {
