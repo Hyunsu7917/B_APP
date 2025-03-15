@@ -138,9 +138,19 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     console.log("🔍 선택된 Magnet:", magnetName);
 
     let fileUri;
+    let headers = [];       // ✅ 함수 상단에서 선언
+    let rows = [];
+    let filteredData = [];
+
     if (Platform.OS === "web") {
       console.warn("⚠️ 웹 환경에서 fetch()를 사용하여 엑셀 파일 로드.");
-      const response = await fetch("http://localhost:5000/assets/site.xlsx");
+      const response = await fetch("https://bkh-app.onrender.com/assets/site.xlsx", {
+        method: "GET",
+        headers: {
+          "Authorization": "Basic " + btoa("BBIOK:Bruker_2025"), // 기본 인증 추가
+          "Content-Type": "application/octet-stream"
+        }
+      });
       const blob = await response.blob();
       const reader = new FileReader();
 
@@ -150,8 +160,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
 
         console.log("📂 엑셀 파일 시트 목록:", workbook.SheetNames);
 
-        // ✅ 여기에 시트 강제 선택 코드 삽입
-        const sheetName = "Magnet";  // 강제로 'Magnet' 시트 사용
+        const sheetName = "Magnet";  // ✅ 강제로 'Magnet' 시트 사용
         console.log("📑 선택된 시트 이름:", sheetName);
 
         const sheet = workbook.Sheets[sheetName];
@@ -168,32 +177,24 @@ const loadExcelData = async (magnetName, setMagnetData) => {
           return;
         }
 
-        const headers = jsonData[0].map(h => h.trim().toLowerCase()); // 모든 헤더를 소문자로 변환
-        const rows = jsonData.slice(1).map(row => {
+        // ✅ 여기서 `headers`와 `rows`를 재할당 (let으로 선언한 변수를 재사용)
+        headers = jsonData[0].map(h => h.trim().toLowerCase());
+        rows = jsonData.slice(1).map(row => {
           let obj = {};
           headers.forEach((h, i) => {
-              const key = h?.trim();  // headers에서 공백 제거
-              const value = row[i] !== undefined ? row[i].toString().trim() : ""; // 값이 undefined일 경우 빈 문자열
-              if (key && value) {  
-                  obj[key] = value;
-              }
+            const key = h?.trim();
+            const value = row[i] !== undefined ? row[i].toString().trim() : "";
+            if (key && value) {
+              obj[key] = value;
+            }
           });
           return obj;
-      });
- 
-     
-      // 데이터 확인
-        console.log("🔍 Headers 확인:", headers.map(h => `"${h}"`));
+        });
+
+        console.log("🔍 Headers 확인:", headers);
         console.log("🔍 변환된 Rows 확인:", rows.slice(0, 5));
-        console.log("🔍 선택된 Magnet:", magnetName);
-        
-        // 필터링 데이터 확인
-        const filteredData = rows.filter(row => {
-          console.log("🔍 필터링 중:", row["magnet"], magnetName);
-          return row["magnet"]?.trim().toLowerCase() === magnetName.toLowerCase();
-      });
-      
-        
+
+        filteredData = rows.filter(row => row["magnet"]?.trim().toLowerCase() === magnetName.toLowerCase());
         
         console.log("✅ 필터링된 데이터:", filteredData);
         setMagnetData(filteredData);
@@ -214,8 +215,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     });
 
     const workbook = XLSX.read(fileContent, { type: "base64" });
-    
-    // ✅ 시트 강제 선택 추가
+
     const sheetName = "Magnet";
     console.log("📑 선택된 시트 이름:", sheetName);
 
@@ -231,16 +231,18 @@ const loadExcelData = async (magnetName, setMagnetData) => {
       return;
     }
 
-    const headers = jsonData[0];
-    const rows = jsonData.slice(1).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-    const filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
-    
+    // ✅ 여기서 `headers`와 `rows`를 재할당
+    headers = jsonData[0];
+    rows = jsonData.slice(1).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+    filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
+
     console.log("✅ 필터링된 데이터:", filteredData);
     setMagnetData(filteredData);
   } catch (error) {
     console.error("❌ Excel 파일 로딩 중 오류:", error);
   }
 };
+
 
 export default function App() {
   const [screen, setScreen] = useState("home");
@@ -295,12 +297,15 @@ export default function App() {
         try {
             console.log("🟢 Excel 파일 다운로드 시작");
 
-            const response = await fetch("https://bkh-app.onrender.com/download-excel", {
+            const response = await fetch("https://bkh-app.onrender.com/assets/site.xlsx", {
               method: "GET",
               headers: {
+                "Authorization": "Basic " + btoa("BBIOK:Bruker_2025"),  // 인증 추가
                 "Content-Type": "application/octet-stream"
               }
-            });         
+            });
+            
+                     
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
@@ -329,6 +334,8 @@ export default function App() {
         console.log("📌 선택된 Magnet:", selectedMagnet);  // 선택된 Magnet 확인
 
         loadExcelData(selectedMagnet, setMagnetData);  // ❌ selectedMagnet이 정확히 전달되는지 확인
+
+        console.log("📊 Final 화면의 magnetData: ", magnetData);
     }
 }, [screen]);
 
@@ -498,6 +505,8 @@ export default function App() {
             }}
           >
             <Text style={styles.title}>Final Data</Text>
+
+            {console.log("Final 화면의 magnetData: ", magnetData)}
 
             {magnetData.length > 0 ? (
               <View style={[styles.table, { width: "80%", maxWidth: 500, maxheight: 600, alignSelf: "center"}]}>
