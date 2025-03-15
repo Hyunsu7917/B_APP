@@ -472,7 +472,7 @@ export default function App() {
             <Text style={styles.title}>Final Data</Text>
 
             {magnetData.length > 0 ? (
-              <View style={[styles.table, { width: "80%", maxWidth: 500 }]}>
+              <View style={[styles.table, { width: "80%", maxWidth: 500, maxheight: 600, alignSelf: "center"}]}>
                 {/* ✅ 내부 ScrollView에 flex 설정 및 nestedScrollEnabled 추가 */}
                 <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
                   {Object.entries(magnetData[0]).map(([key, value], index) => (
