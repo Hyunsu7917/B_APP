@@ -17,7 +17,7 @@ app.use(basicAuth({
 }));
 
 app.get("/download-excel", (req, res) => {
-  const filePath = path.join(__dirname, "assets", "site.xlsx");
+  const filePath = path.join(__dirname, "public", "assets", "site.xlsx");
   res.download(filePath, "site.xlsx", (err) => {
       if (err) {
           console.error("❌ 파일 다운로드 중 오류 발생:", err);
