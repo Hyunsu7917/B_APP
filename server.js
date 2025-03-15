@@ -22,9 +22,9 @@ app.get('/', (req, res) => {
 
 // 📌 CORS 설정 (모든 도메인 허용)
 app.use(cors({
-  origin: '*',  // 필요하면 특정 도메인으로 변경 가능 (예: "http://localhost:8081")
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: "*", // 모든 도메인에서 접근 가능 (필요시 특정 도메인만 허용 가능)
+  methods: ["GET", "POST", "OPTIONS"], // 허용할 요청 메서드
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(cors({
   origin: ["http://localhost:8081", "https://bkh-app.onrender.com"], // 허용할 도메인 추가
@@ -42,7 +42,7 @@ app.get("/", (req, res) => {
 });
 
 // 📌 정적 파일 제공 (엑셀 파일 포함)
-app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+app.use("/assets", express.static(path.join(__dirname, "uploads")));
 
 // 📌 요청 로그 출력 (디버깅용)
 app.use((req, res, next) => {
@@ -88,5 +88,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
 });
 
 // 📌 서버 실행
-app.listen(5000, "0.0.0.0", () => console.log("🚀 Server running on http://0.0.0.0:5000"));
+app.listen(PORT, () => {
+  console.log(`✅ 서버가 실행 중: https://bkh-app.onrender.com`);
+});
 
