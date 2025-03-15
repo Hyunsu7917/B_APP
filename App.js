@@ -5,6 +5,34 @@ import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 import { Alert } from 'react-native';
+import * as Updates from "expo-updates";
+import { Alert } from "react-native";
+
+const checkForUpdates = async () => {
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      Alert.alert(
+        "업데이트 가능", 
+        "새로운 버전이 있습니다. 업데이트하시겠습니까?",
+        [
+          { text: "취소", style: "cancel" },
+          { text: "업데이트", onPress: async () => {
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+          }}
+        ]
+      );
+    }
+  } catch (error) {
+    console.error("업데이트 확인 실패:", error);
+  }
+};
+
+// 앱 실행 시 업데이트 확인
+useEffect(() => {
+  checkForUpdates();
+}, []);
 
 
 // ✅ ArrayBuffer → Base64 변환 함수
@@ -435,7 +463,9 @@ export default function App() {
           <ScrollView 
             style={{ flex: 1, width: "100%" }}
             contentContainerStyle={{
-              justifyContent: "flex-start", // 내용이 위쪽에 정렬되도록 설정
+              flexGrow: 1,
+              alignItems: "center",
+              justifyContent: "flex-start",
               paddingVertical: 20,
             }}
           >
