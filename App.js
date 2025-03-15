@@ -5,7 +5,7 @@ import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 
-const downloadExcel = async () => {
+export const downloadExcel = async () => {
   try {
     const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
 
@@ -23,7 +23,36 @@ const downloadExcel = async () => {
     Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');
   }
 };
+export const uploadExcel = async (file) => {
+  const formData = new FormData();
+  formData.append('file', {
+      uri: file.uri,
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      name: 'site.xlsx',
+  });
 
+  try {
+      const response = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      console.log('업로드 성공:', response.data);
+      return response.data;
+  } catch (error) {
+      console.error('업로드 실패:', error);
+      throw error;
+  }
+};
+export const testApiCall = async () => {
+  try {
+      const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
+      console.log('응답:', response);
+      return response.data;
+  } catch (error) {
+      console.error('API 요청 실패:', error.response ? error.response.data : error.message);
+      throw error;
+  }
+};
 // 엑셀 파일을 내부 저장소로 복사하는 함수
 const copyExcelToLocal = async () => {
   try {
