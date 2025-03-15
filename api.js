@@ -2,12 +2,13 @@ import axios from 'axios';
 
 // 기본 Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: 'https://bkh-app.onrender.com',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Basic ' + btoa('BBIOK:Bruker_2025') // 인증 추가
-  }
-});
+    baseURL: 'http://10.0.2.2:5000', // 안드로이드 에뮬레이터에서 접근할 수 있는 로컬 서버 주소
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + btoa('BBIOK:Bruker_2025') // 인증 추가
+    }
+  });
+  
 export default api;
 
 import api from './api';
