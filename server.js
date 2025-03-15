@@ -17,14 +17,9 @@ app.use(basicAuth({
 }));
 
 app.get("/download-excel", (req, res) => {
-  const filePath = path.join(__dirname, "public", "assets", "site.xlsx");
-  res.download(filePath, "site.xlsx", (err) => {
-      if (err) {
-          console.error("❌ 파일 다운로드 중 오류 발생:", err);
-          res.status(500).send("파일을 다운로드할 수 없습니다.");
-      }
-  });
+  res.redirect("https://bkh-app.onrender.com/assets/site.xlsx");
 });
+
 
 // 📌 CORS 설정 (모든 도메인 허용)
 app.use(cors({
