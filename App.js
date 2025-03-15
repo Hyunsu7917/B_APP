@@ -295,8 +295,12 @@ export default function App() {
         try {
             console.log("🟢 Excel 파일 다운로드 시작");
 
-            const response = await fetch("https://bkh-app.onrender.com/download-excel");
-            if (!response.ok) throw new Error("파일을 가져올 수 없습니다.");
+            const response = await fetch("https://bkh-app.onrender.com/download-excel", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/octet-stream"
+              }
+            });         
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
