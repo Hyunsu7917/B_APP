@@ -4,6 +4,25 @@ import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
 
+const downloadExcel = async () => {
+  try {
+    const response = await api.get('/assets/site.xlsx', { responseType: 'blob' });
+
+    // 🔴 응답을 확인하는 로그 추가 (여기서 response를 확인해야 함)
+    console.log('응답:', response);
+
+    const fileUri = `${FileSystem.documentDirectory}site.xlsx`;
+    await FileSystem.writeAsStringAsync(fileUri, response.data, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    Alert.alert('다운로드 완료!', '파일이 저장되었습니다.');
+  } catch (error) {
+    console.error('엑셀 다운로드 실패:', error);
+    Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');
+  }
+};
+
 // 엑셀 파일을 내부 저장소로 복사하는 함수
 const copyExcelToLocal = async () => {
   try {
