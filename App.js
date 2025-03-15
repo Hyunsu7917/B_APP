@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platfo
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
+import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 
 const downloadExcel = async () => {
   try {
