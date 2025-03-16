@@ -4,12 +4,12 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer"); // 파일 업로드
 const XLSX = require("xlsx");
-const basicAuth = require('express-basic-auth'); // 기본 인증 추가
+const basicAuth = require("express-basic-auth"); // 기본 인증 추가
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS 설정 (중복 제거)
+// ✅ CORS 설정
 app.use(cors({
   origin: ["http://localhost:8081", "https://bkh-app.onrender.com"], // 허용할 도메인
   methods: ["GET", "POST"], // 허용할 HTTP 메서드
@@ -19,29 +19,28 @@ app.use(cors({
 
 // ✅ 비밀번호 인증 설정 (Basic Auth)
 app.use(basicAuth({
-  users: { 'BBIOK': 'Bruker_2025' },  // 사용자명과 비밀번호 설정
+  users: { "BBIOK": "Bruker_2025" }, // 사용자명과 비밀번호 설정
   challenge: true,
-  unauthorizedResponse: 'Unauthorized'
+  unauthorizedResponse: "Unauthorized"
 }));
 
 // ✅ 서버 정상 동작 확인
 app.get("/", (req, res) => {
-    res.send("🚀 서버가 정상적으로 작동 중입니다!");
+  res.send("🚀 서버가 정상적으로 작동 중입니다!");
 });
 
 // ✅ 정적 파일 제공 (엑셀 파일 포함)
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // ✅ 엑셀 파일 다운로드 API (인증 포함)
-app.get("/assets/site.xlsx", (req, res) => {
+app.get("/download/site.xlsx", (req, res) => {
   const filePath = path.join(__dirname, "assets", "site.xlsx");
-  
+
   if (fs.existsSync(filePath)) {
     console.log("✅ 파일 존재:", filePath);
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="site.xlsx"');
-    res.sendFile(filePath);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.download(filePath); // 📌 `res.sendFile()` → `res.download()`로 변경
   } else {
     console.error("❌ 파일이 존재하지 않음:", filePath);
     res.status(404).send("File not found");
