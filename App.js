@@ -74,30 +74,26 @@ const downloadExcel = async () => {
     const password = "Bruker_2025";
     const encodedAuth = btoa(`${username}:${password}`); // Base64 인코딩
 
-    console.log("🛠 Authorization 헤더:", `Basic ${encodedAuth}`); // ✅ 인증 헤더 로그 추가
+    console.log("📌 [React Native] Authorization 헤더 값:", `Basic ${encodedAuth}`); // 콘솔에 출력
 
     const response = await axios.get(FILE_URL, {
-      responseType: "arraybuffer", // 바이너리 데이터로 받기
+      responseType: 'arraybuffer',  // 파일 다운로드
       headers: {
-        "Accept": "*/*",
-        "Authorization": `Basic ${encodedAuth}` // 인증 정보 포함
-      }
+        'Accept': '*/*',
+        'Authorization': `Basic ${encodedAuth}`,
+      },
     });
-
-    console.log("🔍 응답 상태 코드:", response.status); // ✅ 응답 상태 코드 확인
 
     if (response.status !== 200) {
       throw new Error(`서버 응답 오류: ${response.status}`);
     }
 
-    const base64Data = arrayBufferToBase64(response.data);
-    await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-
-    console.log("✅ 엑셀 파일 다운로드 완료:", FILE_PATH);
+    console.log("✅ [React Native] 서버 응답 성공:", response);
   } catch (error) {
-    console.error("❌ 엑셀 다운로드 실패:", error);
+    console.error("❌ [React Native] 파일 다운로드 요청 실패:", error);
   }
 };
+
 
 
 export const uploadExcel = async (file) => {
