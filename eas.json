@@ -13,6 +13,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "android": {
+        "buildType": "apk" 
+      },
       "env": {
         "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
       }
