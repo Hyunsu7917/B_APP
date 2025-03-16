@@ -33,14 +33,18 @@ app.get("/", (req, res) => {
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // ✅ 엑셀 파일 다운로드 API (인증 포함)
-app.get("/download/site.xlsx", (req, res) => {
+app.get("/download/site.xlsx", basicAuth({
+  users: { "BBIOK": "Bruker_2025" }, // 사용자명과 비밀번호
+  challenge: true,
+  unauthorizedResponse: "Unauthorized"
+}), (req, res) => {
   const filePath = path.join(__dirname, "assets", "site.xlsx");
 
   if (fs.existsSync(filePath)) {
     console.log("✅ 파일 존재:", filePath);
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.download(filePath); // 📌 `res.sendFile()` → `res.download()`로 변경
+    res.download(filePath); // 📌 `res.sendFile()` → `res.download()` 사용
   } else {
     console.error("❌ 파일이 존재하지 않음:", filePath);
     res.status(404).send("File not found");

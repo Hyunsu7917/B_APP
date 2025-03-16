@@ -70,33 +70,27 @@ import { encode as base64Encode } from "react-native-quick-base64"; // 🔹 Base
 
 const downloadExcel = async () => {
   try {
-    console.log("📥 Excel 파일 다운로드 시작...");
+    const username = "BBIOK";
+    const password = "Bruker_2025";
+    const encodedAuth = btoa(`${username}:${password}`); // Base64 인코딩
 
-    const username = "BBIOK"; 
-    const password = "Bruker_2025"; 
-    const encodedAuth = btoa(`${username}:${password}`);
+    console.log("🛠 Authorization 헤더:", `Basic ${encodedAuth}`); // ✅ 인증 헤더 로그 추가
 
-    console.log("🔐 Base64 인코딩된 인증 정보:", encodedAuth); // 🔹 Base64가 제대로 생성되는지 확인
-
-    const response = await fetch(FILE_URL, {
-      method: "GET",
+    const response = await axios.get(FILE_URL, {
+      responseType: "arraybuffer", // 바이너리 데이터로 받기
       headers: {
-        "Authorization": `Basic ${encodedAuth}`,
         "Accept": "*/*",
+        "Authorization": `Basic ${encodedAuth}` // 인증 정보 포함
       }
     });
 
-    console.log("🛠 서버 응답 상태 코드:", response.status); // 🔹 서버 응답 코드 확인
-    if (!response.ok) {
+    console.log("🔍 응답 상태 코드:", response.status); // ✅ 응답 상태 코드 확인
+
+    if (response.status !== 200) {
       throw new Error(`서버 응답 오류: ${response.status}`);
     }
 
-    const blob = await response.blob();
-    console.log("🛠 blob 생성 확인:", blob);
-
-    const arrayBuffer = await blob.arrayBuffer();
-    const base64Data = arrayBufferToBase64(arrayBuffer);
-    
+    const base64Data = arrayBufferToBase64(response.data);
     await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
 
     console.log("✅ 엑셀 파일 다운로드 완료:", FILE_PATH);
@@ -104,7 +98,6 @@ const downloadExcel = async () => {
     console.error("❌ 엑셀 다운로드 실패:", error);
   }
 };
-
 
 export const uploadExcel = async (file) => {
   const formData = new FormData();
