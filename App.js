@@ -70,19 +70,22 @@ import { encode as base64Encode } from "react-native-quick-base64"; // 🔹 Base
 
 const downloadExcel = async () => {
   try {
-    const username = "BBIOK";
-    const password = "Bruker_2025";
+    const username = "BBIOK";  // 사용자 아이디
+    const password = "Bruker_2025"; // 사용자 비밀번호
     const encodedAuth = btoa(`${username}:${password}`); // Base64 인코딩
 
-    console.log("📌 [React Native] Authorization 헤더 값:", `Basic ${encodedAuth}`); // 콘솔에 출력
+    console.log("🔍 [React Native] Authorization 헤더:", `Basic ${encodedAuth}`);
+    console.log("📌 [React Native] 요청 URL:", FILE_URL);
+
 
     const response = await axios.get(FILE_URL, {
-      responseType: 'arraybuffer',  // 파일 다운로드
+      responseType: 'arraybuffer',
       headers: {
         'Accept': '*/*',
-        'Authorization': `Basic ${encodedAuth}`,
-      },
+        'Authorization': `Basic ${encodedAuth}`
+      }
     });
+
 
     if (response.status !== 200) {
       throw new Error(`서버 응답 오류: ${response.status}`);

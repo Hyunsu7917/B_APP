@@ -34,19 +34,19 @@ app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // ✅ 엑셀 파일 다운로드 API (인증 포함)
 app.get('/download/site.xlsx', (req, res) => {
-  console.log("📌 [Server] 요청된 Authorization 헤더:", req.headers.authorization);
+  const authHeader = req.headers.authorization;
+  console.log("🔍 [Server] Received Authorization Header:", authHeader); // 서버에서 받은 헤더 로그 출력
 
-  if (!req.headers.authorization) {
-      return res.status(401).json({ error: "인증 정보 없음" });
+  if (!authHeader || authHeader !== "Basic " + Buffer.from("BBIOK:Bruker_2025").toString("base64")) {
+      return res.status(401).send("Unauthorized");
   }
 
   const filePath = path.join(__dirname, 'assets', 'site.xlsx');
-
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename="site.xlsx"');
-
   res.sendFile(filePath);
 });
+
 
 
 
