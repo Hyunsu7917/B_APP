@@ -8,7 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-        "artifact": "apk"
+        "buildType": "apk"
       },
       "env": {
         "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
@@ -17,7 +17,7 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "artifact": "apk"
+        "buildType": "apk"
       },
       "env": {
         "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
@@ -25,9 +25,8 @@
     },
     "production": {
       "autoIncrement": true,
-      "distribution": "store",
       "android": {
-        "artifact": "apk"
+        "buildType": "apk"
       },
       "env": {
         "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
