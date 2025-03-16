@@ -33,23 +33,26 @@ app.get("/", (req, res) => {
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // ✅ 엑셀 파일 다운로드 API (인증 포함)
-app.get("/download/site.xlsx", basicAuth({
-  users: { "BBIOK": "Bruker_2025" }, // 사용자명과 비밀번호
-  challenge: true,
-  unauthorizedResponse: "Unauthorized"
-}), (req, res) => {
+app.get("/download/site.xlsx", (req, res) => {
+  console.log("🛠 요청 받음: /download/site.xlsx");
+  console.log("🔑 Authorization 헤더:", req.headers.authorization); // ✅ 요청의 인증 헤더 확인
+
+  if (!req.headers.authorization) {
+    return res.status(401).send("❌ 인증 헤더가 없습니다.");
+  }
+
   const filePath = path.join(__dirname, "assets", "site.xlsx");
 
   if (fs.existsSync(filePath)) {
     console.log("✅ 파일 존재:", filePath);
-
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.download(filePath); // 📌 `res.sendFile()` → `res.download()` 사용
+    res.download(filePath);
   } else {
     console.error("❌ 파일이 존재하지 않음:", filePath);
     res.status(404).send("File not found");
   }
 });
+
 
 // ✅ 엑셀 파일 업로드 & JSON 변환 API
 const upload = multer({ dest: "uploads/" });

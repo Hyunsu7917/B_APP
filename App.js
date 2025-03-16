@@ -64,7 +64,7 @@ const arrayBufferToBase64 = (buffer) => {
   }
   return btoa(binary);
 };
-const FILE_URL = "https://bkh-app.onrender.com/assets/site.xlsx";
+const FILE_URL = "https://bkh-app.onrender.com/download/site.xlsx"; // 🔥 인증이 필요한 경로로 수정
 
 import { encode as base64Encode } from "react-native-quick-base64"; // 🔹 Base64 인코딩 라이브러리 추가
 
@@ -98,6 +98,7 @@ const downloadExcel = async () => {
     console.error("❌ 엑셀 다운로드 실패:", error);
   }
 };
+
 
 export const uploadExcel = async (file) => {
   const formData = new FormData();
