@@ -227,32 +227,41 @@ const copyExcelToLocal = async () => {
   console.log("⚡ copyExcelToLocal 함수 실행됨!");
 
   if (Platform.OS === "web") {
-      console.warn("⚠️ 웹 환경에서는 파일 로드 기능을 사용할 수 없습니다.");
-      return null;  // 웹 환경에서는 함수 실행하지 않도록 조기 종료
+    console.warn("⚠️ 웹 환경에서는 파일 로드 기능을 사용할 수 없습니다.");
+    return null; // 웹에서는 실행하지 않도록 조기 종료
   }
 
   try {
-      const fileUri = FileSystem.documentDirectory + "site.xlsx";
-      console.log("📂 저장될 파일 경로:", fileUri);
+    const fileUri = FileSystem.documentDirectory + "site.xlsx";
+    console.log("📂 저장될 파일 경로:", fileUri);
 
-      const fileExists = await FileSystem.getInfoAsync(fileUri);
-      console.log("📂 파일 존재 여부 확인:", fileExists);
+    // 다운로드 전 파일이 존재하는지 확인
+    const fileExists = await FileSystem.getInfoAsync(fileUri);
+    console.log("📂 파일 존재 여부 확인:", fileExists);
 
-      if (!fileExists.exists) {
-          console.log("⬇️ 엑셀 파일이 존재하지 않음, 다운로드 시작...");
-          await FileSystem.downloadAsync(FILE_URL, fileUri);
-          console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
-      } else {
-          console.log("✅ 기존 엑셀 파일이 이미 존재함:", fileUri);
+    if (!fileExists.exists) {
+      console.log("❗ 엑셀 파일이 존재하지 않음, 다운로드 시작...");
+      await FileSystem.downloadAsync(FILE_URL, fileUri);
+      console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
+
+      // 다운로드 후 다시 확인
+      const downloadedFile = await FileSystem.getInfoAsync(fileUri);
+      console.log("📂 다운로드된 파일 확인:", downloadedFile);
+
+      if (!downloadedFile.exists) {
+        console.error("❌ 다운로드된 파일을 찾을 수 없음!");
+        return null;
       }
-
-      return fileUri;
-    } catch (error) {
-      console.error("❌ 엑셀 파일 로드 실패:", error);
-      return null;
+    } else {
+      console.log("✅ 기존 엑셀 파일이 이미 존재함:", fileUri);
     }
-};
 
+    return fileUri;
+  } catch (error) {
+    console.error("❌ 엑셀 파일 로드 실패:", error);
+    return null;
+  }
+};
 
 // 엑셀 데이터 로드 함수
 const loadExcelData = async (magnetName, setMagnetData) => {
