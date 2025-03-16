@@ -35,5 +35,21 @@
   },
   "submit": {
     "production": {}
+  },
+  "extra": {
+    "eas": {
+      "projectId": "a8dd68d3-27e8-4dd0-9c77-f3fcb61617bf"
+    }
+  },
+  "updates": {
+    "url": "https://u.expo.dev/a8dd68d3-27e8-4dd0-9c77-f3fcb61617bf"
+  },
+  "android": {
+    "runtimeVersion": "1.0.0"
+  },
+  "ios": {
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
