@@ -7,77 +7,40 @@ const XLSX = require("xlsx");
 const basicAuth = require('express-basic-auth'); // 기본 인증 추가
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-const corsOptions = {
-  origin: "*", // 모든 도메인 허용
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  optionsSuccessStatus: 204
-};
+// ✅ CORS 설정 (중복 제거)
+app.use(cors({
+  origin: ["http://localhost:8081", "https://bkh-app.onrender.com"], // 허용할 도메인
+  methods: ["GET", "POST"], // 허용할 HTTP 메서드
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 
-app.use(cors(corsOptions));
-
-
-// 비밀번호 인증 설정
+// ✅ 비밀번호 인증 설정 (Basic Auth)
 app.use(basicAuth({
   users: { 'BBIOK': 'Bruker_2025' },  // 사용자명과 비밀번호 설정
-  challenge: true,  // 브라우저에서 로그인 요청
-  unauthorizedResponse: 'Unauthorized'  // 인증 실패 시 응답 메시지
+  challenge: true,
+  unauthorizedResponse: 'Unauthorized'
 }));
 
-app.get("/download-excel", (req, res) => {
-  res.redirect("https://bkh-app.onrender.com/assets/site.xlsx");
-});
-
-
-// 📌 CORS 설정 (모든 도메인 허용)
-app.use(cors({
-  origin: "*", // 모든 도메인에서 접근 가능 (필요시 특정 도메인만 허용 가능)
-  methods: ["GET", "POST", "OPTIONS"], // 허용할 요청 메서드
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.use(cors({
-  origin: ["http://localhost:8081", "https://bkh-app.onrender.com"], // 허용할 도메인 추가
-  methods: ["GET", "POST"], // 허용할 HTTP 메서드
-  allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더
-  credentials: true // 인증 정보 포함 허용
-}));
-
-// JSON 요청을 처리하기 위한 미들웨어
-app.use(express.json());
-
-// 서버 정상 동작 확인
+// ✅ 서버 정상 동작 확인
 app.get("/", (req, res) => {
     res.send("🚀 서버가 정상적으로 작동 중입니다!");
 });
 
-// 📌 정적 파일 제공 (엑셀 파일 포함)
+// ✅ 정적 파일 제공 (엑셀 파일 포함)
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-app.get("/download-excel", (req, res) => {
-  const filePath = path.join(__dirname, "assets", "site.xlsx");
-
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error("❌ 파일 다운로드 중 오류 발생:", err);
-      res.status(500).send("파일을 다운로드할 수 없습니다.");
-    }
-  });
-});
-
-
-
-// 📌 요청 로그 출력 (디버깅용)
-app.use((req, res, next) => {
-  console.log("📢 요청 받은 URL:", req.url);
-  next();
-});
-
-// 📌 엑셀 파일 제공 API
+// ✅ 엑셀 파일 다운로드 API (인증 포함)
 app.get("/assets/site.xlsx", (req, res) => {
-  const filePath = path.join(__dirname, "public", "assets", "site.xlsx");
+  const filePath = path.join(__dirname, "assets", "site.xlsx");
+  
   if (fs.existsSync(filePath)) {
     console.log("✅ 파일 존재:", filePath);
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="site.xlsx"');
     res.sendFile(filePath);
   } else {
     console.error("❌ 파일이 존재하지 않음:", filePath);
@@ -85,12 +48,9 @@ app.get("/assets/site.xlsx", (req, res) => {
   }
 });
 
-// 📌 ⏬ 새로운 기능: 엑셀 파일 업로드 & JSON 변환 추가! ⏬
-
-// 파일 업로드를 위한 multer 설정
+// ✅ 엑셀 파일 업로드 & JSON 변환 API
 const upload = multer({ dest: "uploads/" });
 
-// 📌 엑셀 파일 업로드 & JSON 변환 API
 app.post("/upload", upload.single("file"), (req, res) => {
   try {
     const filePath = req.file.path;
@@ -110,8 +70,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
   }
 });
 
-// 📌 서버 실행
+// ✅ 서버 실행
 app.listen(PORT, () => {
   console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
 });
-

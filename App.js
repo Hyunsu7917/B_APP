@@ -6,6 +6,26 @@ import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 import { Alert } from 'react-native';
 import * as Updates from "expo-updates";
+const testDownload = async () => {
+  try {
+    console.log("🔍 파일 다운로드 테스트 시작...");
+
+    const response = await fetch(FILE_URL);
+    console.log("🛠 응답 상태 코드:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`서버 응답 오류: ${response.status}`);
+    }
+
+    console.log("✅ 파일 다운로드 응답 성공");
+  } catch (error) {
+    console.error("❌ 파일 다운로드 요청 실패:", error);
+  }
+};
+
+useEffect(() => {
+  testDownload(); // API 요청이 정상적으로 되는지 확인하는 함수 실행
+}, []);
 
 const checkForUpdates = async () => {
   try {
@@ -46,26 +66,42 @@ const arrayBufferToBase64 = (buffer) => {
 };
 const FILE_URL = "https://bkh-app.onrender.com/assets/site.xlsx";
 
+import { encode as base64Encode } from "react-native-quick-base64"; // 🔹 Base64 인코딩 라이브러리 추가
+
 const downloadExcel = async () => {
   try {
-      const response = await api.get(FILE_URL, { responseType: 'arraybuffer' });
+    console.log("📥 Excel 파일 다운로드 시작...");
 
-      if (!response || !response.data) {
-          throw new Error("서버에서 응답이 없습니다.");
+    const username = "BBIOK"; 
+    const password = "Bruker_2025"; 
+    const encodedAuth = btoa(`${username}:${password}`);
+
+    console.log("🔐 Base64 인코딩된 인증 정보:", encodedAuth); // 🔹 Base64가 제대로 생성되는지 확인
+
+    const response = await fetch(FILE_URL, {
+      method: "GET",
+      headers: {
+        "Authorization": `Basic ${encodedAuth}`,
+        "Accept": "*/*",
       }
+    });
 
-      console.log("📥 응답 데이터:", response);
+    console.log("🛠 서버 응답 상태 코드:", response.status); // 🔹 서버 응답 코드 확인
+    if (!response.ok) {
+      throw new Error(`서버 응답 오류: ${response.status}`);
+    }
 
-      const base64Data = arrayBufferToBase64(response.data);
-      const fileUri = FileSystem.documentDirectory + "site.xlsx";
+    const blob = await response.blob();
+    console.log("🛠 blob 생성 확인:", blob);
 
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64Data = arrayBufferToBase64(arrayBuffer);
+    
+    await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
 
-      console.log("✅ 엑셀 파일 다운로드 성공:", fileUri);
-      return fileUri;
+    console.log("✅ 엑셀 파일 다운로드 완료:", FILE_PATH);
   } catch (error) {
-      console.error("❌ 엑셀 다운로드 실패:", error);
-      return null;
+    console.error("❌ 엑셀 다운로드 실패:", error);
   }
 };
 
@@ -101,34 +137,44 @@ export const testApiCall = async () => {
   }
 };
 // 엑셀 파일을 내부 저장소로 복사하는 함수
+const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";  // ✅ 로컬 저장 경로
+
 const copyExcelToLocal = async () => {
   try {
+    const fileUri = FileSystem.documentDirectory + "site.xlsx";
+    console.log("📁 저장될 파일 경로:", fileUri);
+
     const fileExists = await FileSystem.getInfoAsync(fileUri);
     if (!fileExists.exists) {
-        console.error("❌ 다운로드된 파일을 찾을 수 없습니다.");
-        return;
-    }
-  else {
-      console.log("✅ 기존 엑셀 파일이 이미 존재함:", assetUri);
-  }
+      console.log("📂 엑셀 파일이 존재하지 않음, 다운로드 시작...");
 
-    return assetUri;
+      await FileSystem.downloadAsync(FILE_URL, fileUri);
+      console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
+    } else {
+      console.log("✅ 기존 엑셀 파일이 이미 존재함:", fileUri);
+    }
+
+    return fileUri;
   } catch (error) {
     console.error("❌ 엑셀 파일 로드 실패:", error);
     return null;
   }
 };
 
+
 // 엑셀 데이터 로드 함수
 const loadExcelData = async (magnetName, setMagnetData) => {
   try {
     console.log("🔍 선택된 Magnet:", magnetName);
 
-    let fileUri = await copyExcelToLocal();
+    // 📌 fileUri를 정확히 받아오기
+    const fileUri = await copyExcelToLocal();
     if (!fileUri) {
       console.error("❌ 파일을 찾을 수 없습니다.");
       return;
     }
+
+    console.log("✅ 로컬 저장된 엑셀 파일 경로:", fileUri);
 
     const fileContent = await FileSystem.readAsStringAsync(fileUri, {
       encoding: FileSystem.EncodingType.Base64,
@@ -155,7 +201,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     const rows = jsonData.slice(1).map(row =>
       Object.fromEntries(headers.map((h, i) => [h, row[i]]))
     );
-    
+
     const filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
 
     console.log("✅ 필터링된 데이터:", filteredData);
@@ -164,8 +210,6 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     console.error("❌ Excel 파일 로딩 중 오류:", error);
   }
 };
-
-
 
 export default function App() {
   const [screen, setScreen] = useState("home");
