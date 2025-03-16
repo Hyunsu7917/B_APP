@@ -6,6 +6,39 @@ import * as XLSX from "xlsx";
 import api from './api'; // 🔥 여기서 올바르게 import해야 함!
 import { Alert } from 'react-native';
 import * as Updates from "expo-updates";
+import axios from 'axios';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
+
+const username = "BBIOK";
+const password = "Bruker_2025";
+const encodedAuth = Buffer.from(`${username}:${password}`).toString("base64");  // 🔥 수정됨!
+
+
+console.log("📂 FileSystem 모듈:", FileSystem);
+
+const FILE_URL = "https://bkh-app.onrender.com/download/site.xlsx"; // 🔥 인증이 필요한 경로로 수정
+
+const checkFileInfo = async () => {
+  if (Platform.OS === "web") {
+      console.warn("⚠️ 웹 환경에서는 파일 정보를 확인할 수 없습니다.");
+      return;  // 웹에서는 실행되지 않도록 차단
+  }
+
+  try {
+      const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
+      console.log("📂 파일 정보:", fileInfo);
+  } catch (error) {
+      console.error("❌ 파일 정보 가져오기 실패:", error);
+  }
+};
+if (Platform.OS !== "web") {
+  checkFileInfo();
+}
+console.log("📢 현재 디바이스 정보:", Device);
+console.log("📢 Expo Notifications 지원 여부:", Notifications);
+
 const testDownload = async () => {
   try {
     console.log("🔍 파일 다운로드 테스트 시작...");
@@ -24,8 +57,14 @@ const testDownload = async () => {
 };
 
 useEffect(() => {
-  testDownload(); // API 요청이 정상적으로 되는지 확인하는 함수 실행
+  console.log("📢 useEffect 실행됨! 파일 다운로드 시작");
+  downloadExcel();
+  
+  if (Platform.OS !== "web") {
+    checkFileInfo();  // ✅ 웹에서는 실행되지 않도록 조건 추가
+  }
 }, []);
+
 
 const checkForUpdates = async () => {
   try {
@@ -64,39 +103,89 @@ const arrayBufferToBase64 = (buffer) => {
   }
   return btoa(binary);
 };
-const FILE_URL = "https://bkh-app.onrender.com/download/site.xlsx"; // 🔥 인증이 필요한 경로로 수정
 
-import { encode as base64Encode } from "react-native-quick-base64"; // 🔹 Base64 인코딩 라이브러리 추가
+const downloadFile = async () => {
+  if (Platform.OS === "web") {
+    console.warn("⚠️ 웹 환경에서는 파일 다운로드 기능을 사용할 수 없습니다.");
+    return;
+  }
 
-const downloadExcel = async () => {
   try {
-    const username = "BBIOK";  // 사용자 아이디
-    const password = "Bruker_2025"; // 사용자 비밀번호
-    const encodedAuth = btoa(`${username}:${password}`); // Base64 인코딩
+    console.log("📥 파일 다운로드 시작...");
+    console.log("🔑 Encoded Auth:", encodedAuth);
 
-    console.log("🔍 [React Native] Authorization 헤더:", `Basic ${encodedAuth}`);
-    console.log("📌 [React Native] 요청 URL:", FILE_URL);
+    const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";
 
+    console.log("📂 저장할 파일 경로:", FILE_PATH);
 
-    const response = await axios.get(FILE_URL, {
-      responseType: 'arraybuffer',
+    const response = await fetch(FILE_URL, {
+      method: "GET",
       headers: {
-        'Accept': '*/*',
-        'Authorization': `Basic ${encodedAuth}`
+        "Authorization": `Basic ${encodedAuth}`,
+        "Accept": "*/*"
       }
     });
 
-
-    if (response.status !== 200) {
+    if (!response.ok) {
       throw new Error(`서버 응답 오류: ${response.status}`);
     }
 
-    console.log("✅ [React Native] 서버 응답 성공:", response);
+    const fileData = await response.blob();
+
+    // 🔹 **웹에서는 FileSystem.writeAsStringAsync 실행 X**
+    if (Platform.OS === "web") {
+      console.warn("⚠️ 웹 환경에서는 파일을 저장할 수 없습니다.");
+      return;
+  }
+  
+
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(",")[1];
+
+      try {
+        await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+        console.log("✅ 파일 다운로드 성공! 저장된 경로:", FILE_PATH);
+      } catch (error) {
+        console.error("❌ 파일 저장 실패:", error);
+      }
+    };
+
+    reader.readAsDataURL(fileData);
   } catch (error) {
-    console.error("❌ [React Native] 파일 다운로드 요청 실패:", error);
+    console.error("❌ 파일 다운로드 실패:", error);
   }
 };
 
+// 📌 기존 downloadExcel 유지 (downloadFile 호출)
+const downloadExcel = async () => {
+  try {
+    console.log("⚡ [React Native] downloadExcel 함수 실행됨!");
+
+    if (Platform.OS === "web") {
+      console.warn("⚠️ 웹 환경에서는 다운로드 기능을 사용할 수 없습니다.");
+      return;  // 웹에서는 실행하지 않음
+  }
+  
+    await downloadFile();
+    console.log("✅ [React Native] downloadExcel 실행 완료!");
+    
+  } catch (error) {
+    console.error("❌ [React Native] downloadExcel 실패:", error);
+  }
+};
+// 📌 useEffect에서도 `downloadExcel`을 실행하도록 유지
+useEffect(() => {
+  console.log("📢 useEffect 실행됨! 파일 다운로드 시작");
+
+  if (Platform.OS !== "web") {
+      downloadExcel();
+      checkFileInfo();
+  } else {
+      console.warn("⚠️ 웹 환경에서는 파일 다운로드 및 확인 기능을 사용할 수 없습니다.");
+  }
+}, []);
 
 
 export const uploadExcel = async (file) => {
@@ -134,13 +223,17 @@ const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";  // ✅ 로컬 저
 
 const copyExcelToLocal = async () => {
   try {
+    if (Platform.OS === "web") {  
+      console.warn("⚠️ 웹 환경에서는 파일 로드 기능을 사용할 수 없습니다.");
+      return null;  // ✅ 웹에서는 실행하지 않음
+    }
+
     const fileUri = FileSystem.documentDirectory + "site.xlsx";
-    console.log("📁 저장될 파일 경로:", fileUri);
+    console.log("📂 저장될 파일 경로:", fileUri);
 
     const fileExists = await FileSystem.getInfoAsync(fileUri);
     if (!fileExists.exists) {
-      console.log("📂 엑셀 파일이 존재하지 않음, 다운로드 시작...");
-
+      console.log("🔽 엑셀 파일이 존재하지 않음, 다운로드 시작...");
       await FileSystem.downloadAsync(FILE_URL, fileUri);
       console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
     } else {
@@ -153,7 +246,6 @@ const copyExcelToLocal = async () => {
     return null;
   }
 };
-
 
 // 엑셀 데이터 로드 함수
 const loadExcelData = async (magnetName, setMagnetData) => {
