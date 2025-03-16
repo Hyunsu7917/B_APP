@@ -1,55 +1,68 @@
 {
-  "cli": {
-    "version": ">= 15.0.15",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
+  "expo": {
+    "name": "BBIOK_App",
+    "slug": "BBIOK_App",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/nmr.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "platforms": [
+      "android",
+      "web",
+      "ios"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+        
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/nmr.png",
+        "backgroundColor": "#ffffff"
       },
-      "env": {
-        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
+      "package": "com.khyunsu.BBIOK_App"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/nmr.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/nmr.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD",
+      "url": "https://u.expo.dev/3a8db303-b445-445e-9dd5-ea2257ed0dc3"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3a8db303-b445-445e-9dd5-ea2257ed0dc3"
       }
     },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
-      }
-    },
-    "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "GRADLE_DISTRIBUTION_URL": "https://services.gradle.org/distributions/gradle-8.0-all.zip"
-      }
-    }
-  },
-  "submit": {
-    "production": {}
-  },
-  "extra": {
-    "eas": {
-      "projectId": "a8dd68d3-27e8-4dd0-9c77-f3fcb61617bf"
-    }
-  },
-  "updates": {
-    "url": "https://u.expo.dev/a8dd68d3-27e8-4dd0-9c77-f3fcb61617bf"
-  },
-  "android": {
     "runtimeVersion": "1.0.0"
-  },
-  "ios": {
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
   }
 }

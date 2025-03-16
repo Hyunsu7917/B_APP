@@ -44,28 +44,31 @@ const arrayBufferToBase64 = (buffer) => {
   }
   return btoa(binary);
 };
+const FILE_URL = "https://bkh-app.onrender.com/assets/site.xlsx";
 
 const downloadExcel = async () => {
   try {
-    const response = await api.get('/assets/site.xlsx', { responseType: 'arraybuffer' });
+      const response = await api.get(FILE_URL, { responseType: 'arraybuffer' });
 
-    console.log('응답:', response);
-    
-    const base64Data = arrayBufferToBase64(response.data);
+      if (!response || !response.data) {
+          throw new Error("서버에서 응답이 없습니다.");
+      }
 
-    const fileUri = `${FileSystem.documentDirectory}site.xlsx`;
+      console.log("📥 응답 데이터:", response);
 
-    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+      const base64Data = arrayBufferToBase64(response.data);
+      const fileUri = FileSystem.documentDirectory + "site.xlsx";
 
-    console.log('다운로드 성공!', fileUri);
-    Alert.alert('다운로드 완료!', '파일이 저장되었습니다.');  // 🔹 여기서 Alert 사용
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+
+      console.log("✅ 엑셀 파일 다운로드 성공:", fileUri);
+      return fileUri;
   } catch (error) {
-    console.error('엑셀 다운로드 실패:', error);
-    Alert.alert('다운로드 실패', '엑셀 파일을 가져오지 못했습니다.');  // 🔹 여기서도 Alert 사용
+      console.error("❌ 엑셀 다운로드 실패:", error);
+      return null;
   }
 };
+
 
 export const uploadExcel = async (file) => {
   const formData = new FormData();
@@ -100,28 +103,14 @@ export const testApiCall = async () => {
 // 엑셀 파일을 내부 저장소로 복사하는 함수
 const copyExcelToLocal = async () => {
   try {
-    if (Platform.OS === "web") {
-      console.warn("⚠️ 웹에서는 'expo-file-system'을 사용할 수 없습니다. 엑셀 파일 로드 스킵.");
-      return null;
-    }
-
-    // 🔹 엑셀 파일의 정확한 경로 설정 (수동 경로)
-    const assetUri = FileSystem.documentDirectory + "site.xlsx";
-
-    // 🔹 파일이 이미 존재하는지 확인 후 복사
-    const fileExists = await FileSystem.getInfoAsync(assetUri);
+    const fileExists = await FileSystem.getInfoAsync(fileUri);
     if (!fileExists.exists) {
-      console.log("📂 엑셀 파일이 존재하지 않음, 파일 복사 진행...");
-      
-      await FileSystem.downloadAsync(
-        "http://192.168.1.13:5000/assets/site.xlsx", // 서버에서 파일 다운로드
-        assetUri
-      );
-
-      console.log("✅ 엑셀 파일 다운로드 완료:", assetUri);
-    } else {
-      console.log("✅ 기존 엑셀 파일이 이미 존재함:", assetUri);
+        console.error("❌ 다운로드된 파일을 찾을 수 없습니다.");
+        return;
     }
+  else {
+      console.log("✅ 기존 엑셀 파일이 이미 존재함:", assetUri);
+  }
 
     return assetUri;
   } catch (error) {
@@ -130,81 +119,12 @@ const copyExcelToLocal = async () => {
   }
 };
 
-
-
 // 엑셀 데이터 로드 함수
 const loadExcelData = async (magnetName, setMagnetData) => {
   try {
     console.log("🔍 선택된 Magnet:", magnetName);
 
-    let fileUri;
-    let headers = [];       // ✅ 함수 상단에서 선언
-    let rows = [];
-    let filteredData = [];
-
-    if (Platform.OS === "web") {
-      console.warn("⚠️ 웹 환경에서 fetch()를 사용하여 엑셀 파일 로드.");
-      const response = await fetch("https://bkh-app.onrender.com/assets/site.xlsx", {
-        method: "GET",
-        headers: {
-          "Authorization": "Basic " + btoa("BBIOK:Bruker_2025"), // 기본 인증 추가
-          "Content-Type": "application/octet-stream"
-        }
-      });
-      const blob = await response.blob();
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-
-        console.log("📂 엑셀 파일 시트 목록:", workbook.SheetNames);
-
-        const sheetName = "Magnet";  // ✅ 강제로 'Magnet' 시트 사용
-        console.log("📑 선택된 시트 이름:", sheetName);
-
-        const sheet = workbook.Sheets[sheetName];
-        if (!sheet) {
-          console.error("❌ '" + sheetName + "' 시트를 찾을 수 없습니다.");
-          return;
-        }
-
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        console.log("📊 변환된 엑셀 데이터:", jsonData);
-        
-        if (jsonData.length === 0) {
-          console.error("❌ 엑셀 데이터가 비어 있습니다.");
-          return;
-        }
-
-        // ✅ 여기서 `headers`와 `rows`를 재할당 (let으로 선언한 변수를 재사용)
-        headers = jsonData[0].map(h => h.trim().toLowerCase());
-        rows = jsonData.slice(1).map(row => {
-          let obj = {};
-          headers.forEach((h, i) => {
-            const key = h?.trim();
-            const value = row[i] !== undefined ? row[i].toString().trim() : "";
-            if (key && value) {
-              obj[key] = value;
-            }
-          });
-          return obj;
-        });
-
-        console.log("🔍 Headers 확인:", headers);
-        console.log("🔍 변환된 Rows 확인:", rows.slice(0, 5));
-
-        filteredData = rows.filter(row => row["magnet"]?.trim().toLowerCase() === magnetName.toLowerCase());
-        
-        console.log("✅ 필터링된 데이터:", filteredData);
-        setMagnetData(filteredData);
-      };
-      reader.readAsArrayBuffer(blob);
-      return;
-    }
-
-    // ✅ 모바일 또는 기타 플랫폼
-    fileUri = await copyExcelToLocal();
+    let fileUri = await copyExcelToLocal();
     if (!fileUri) {
       console.error("❌ 파일을 찾을 수 없습니다.");
       return;
@@ -215,26 +135,28 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     });
 
     const workbook = XLSX.read(fileContent, { type: "base64" });
-
     const sheetName = "Magnet";
-    console.log("📑 선택된 시트 이름:", sheetName);
 
     const sheet = workbook.Sheets[sheetName];
     if (!sheet) {
-      console.error("❌ '" + sheetName + "' 시트를 찾을 수 없습니다.");
+      console.error(`❌ 시트 '${sheetName}'을 찾을 수 없습니다.`);
       return;
     }
 
     const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    console.log("📊 변환된 엑셀 데이터:", jsonData);
+
     if (jsonData.length === 0) {
       console.error("❌ 엑셀 데이터가 비어 있습니다.");
       return;
     }
 
-    // ✅ 여기서 `headers`와 `rows`를 재할당
-    headers = jsonData[0];
-    rows = jsonData.slice(1).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-    filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
+    const headers = jsonData[0];
+    const rows = jsonData.slice(1).map(row =>
+      Object.fromEntries(headers.map((h, i) => [h, row[i]]))
+    );
+    
+    const filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
 
     console.log("✅ 필터링된 데이터:", filteredData);
     setMagnetData(filteredData);
@@ -242,6 +164,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     console.error("❌ Excel 파일 로딩 중 오류:", error);
   }
 };
+
 
 
 export default function App() {
