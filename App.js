@@ -224,93 +224,201 @@ export const testApiCall = async () => {
 const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";  // ✅ 로컬 저장 경로
 
 const copyExcelToLocal = async () => {
-  console.log("⚡ copyExcelToLocal 함수 실행됨!");
+  console.log("📂 copyExcelToLocal 함수 실행됨!");
 
   if (Platform.OS === "web") {
-    console.warn("⚠️ 웹 환경에서는 파일 로드 기능을 사용할 수 없습니다.");
-    return null; // 웹에서는 실행하지 않도록 조기 종료
+      console.warn("⚠️ 웹 환경에서는 `getInfoAsync()`와 `downloadAsync()` 실행 불가. 파일을 직접 업로드해야 합니다.");
+
+      // 기존 버튼이 존재하는지 확인 후 추가
+      let uploadButton = document.getElementById("uploadButton");
+      if (!uploadButton) {
+          uploadButton = document.createElement("button");
+          uploadButton.id = "uploadButton";
+          uploadButton.innerText = "📂 엑셀 파일 업로드";
+          uploadButton.style = "padding: 10px; margin-top: 10px; display:block;";
+
+          uploadButton.onclick = () => {
+              console.log("📂 업로드 버튼 클릭됨!");
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".xlsx";
+              input.onchange = handleFileUpload;
+              input.click();
+          };
+
+          document.body.appendChild(uploadButton);
+          console.log("✅ 파일 업로드 버튼이 추가되었습니다.");
+      } else {
+          console.log("🔹 파일 업로드 버튼이 이미 존재합니다.");
+      }
+
+      return "nullsite.xlsx"; // 웹에서는 자동 다운로드 X, 파일 업로드 필요
   }
 
-  try {
-    const fileUri = FileSystem.documentDirectory + "site.xlsx";
-    console.log("📂 저장될 파일 경로:", fileUri);
+  const fileUri = FileSystem.documentDirectory + "site.xlsx";
+  console.log("📂 저장될 파일 경로:", fileUri);
 
-    // 다운로드 전 파일이 존재하는지 확인
-    const fileExists = await FileSystem.getInfoAsync(fileUri);
-    console.log("📂 파일 존재 여부 확인:", fileExists);
+  let fileInfo = await FileSystem.getInfoAsync(fileUri);
+  console.log("📁 파일 존재 여부:", fileInfo);
 
-    if (!fileExists.exists) {
-      console.log("❗ 엑셀 파일이 존재하지 않음, 다운로드 시작...");
-      await FileSystem.downloadAsync(FILE_URL, fileUri);
-      console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
-
-      // 다운로드 후 다시 확인
-      const downloadedFile = await FileSystem.getInfoAsync(fileUri);
-      console.log("📂 다운로드된 파일 확인:", downloadedFile);
-
-      if (!downloadedFile.exists) {
-        console.error("❌ 다운로드된 파일을 찾을 수 없음!");
-        return null;
+  if (!fileInfo.exists) {
+      console.log("⬇️ 엑셀 파일이 존재하지 않음, 다운로드 시작...");
+      try {
+          await FileSystem.downloadAsync(FILE_URL, fileUri);
+          console.log("✅ 엑셀 파일 다운로드 완료:", fileUri);
+      } catch (error) {
+          console.error("❌ 파일 다운로드 실패:", error);
+          return null;
       }
-    } else {
+  } else {
       console.log("✅ 기존 엑셀 파일이 이미 존재함:", fileUri);
-    }
+  }
 
-    return fileUri;
+  return fileUri;
+};
+
+// 📌 파일 업로드 처리 함수
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) {
+      console.error("❌ 선택된 파일이 없습니다.");
+      return;
+  }
+
+  const reader = new FileReader();
+  reader.readAsBinaryString(file);
+  reader.onload = () => {
+      console.log("📖 파일 읽기 완료!");
+      const workbook = XLSX.read(reader.result, { type: "binary" });
+
+      // ✅ `selectedMagnet`이 올바르게 전달되도록 수정
+      if (!selectedMagnet) {
+          console.error("❌ 선택된 Magnet이 없습니다.");
+          return;
+      }
+
+      processExcelData(workbook, selectedMagnet, setMagnetData);
+  };
+  reader.onerror = (error) => {
+      console.error("❌ 파일 읽기 오류:", error);
+  };
+};
+
+// ✅ loadExcelData 함수에서 웹 환경에서는 `getInfoAsync()`를 실행하지 않도록 수정
+const loadExcelData = async (magnetName, setMagnetData) => {
+  console.log("🔵 선택된 Magnet:", magnetName);
+
+  let fileUri = await copyExcelToLocal();
+  console.log("📂 읽어올 파일 경로:", fileUri);
+
+  if (!fileUri || fileUri === "nullsite.xlsx") {
+      console.warn("⚠️ 파일을 직접 업로드해야 합니다.");
+      return;
+  }
+
+  if (Platform.OS !== "web") {
+      const fileExists = await FileSystem.getInfoAsync(fileUri);
+      console.log("✅ 파일 존재 여부:", fileExists);
+
+      if (!fileExists.exists) {
+          console.error("❌ 파일이 존재하지 않습니다:", fileUri);
+          return;
+      }
+  } else {
+      console.warn("⚠️ 웹 환경에서는 `readAsStringAsync()` 실행 불가능. 파일을 직접 업로드해야 합니다.");
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".xlsx";
+      input.onchange = async (event) => {
+          const file = event.target.files[0];
+          if (!file) {
+              console.error("❌ 선택된 파일이 없습니다.");
+              return;
+          }
+
+          const reader = new FileReader();
+          reader.readAsBinaryString(file);
+          reader.onload = () => {
+              const workbook = XLSX.read(reader.result, { type: "binary" });
+              processExcelData(workbook, magnetName, setMagnetData);
+          };
+          reader.onerror = (error) => {
+              console.error("❌ 파일 읽기 오류:", error);
+          };
+      };
+      input.click();
+      return;
+  }
+  useEffect(() => {
+    console.log("useEffect 실행됨!");
+  
+    if (Platform.OS === "web") {
+      console.warn("⚠️ 웹 환경에서는 `readAsStringAsync()` 실행 불가능. 파일을 직접 업로드해야 합니다.");
+      
+      setTimeout(() => {
+        const root = document.getElementById("root");
+        if (!document.getElementById("uploadButton") && root) {
+          console.log("버튼 생성 시작...");
+  
+          const button = document.createElement("button");
+          button.id = "uploadButton";
+          button.innerText = "📂 엑셀 파일 업로드";
+          button.style = "padding: 10px; margin-top: 10px; position: fixed; top: 20px; left: 20px; z-index: 1000; background-color: red; color: white;";
+  
+          root.appendChild(button);
+          console.log("✅ 버튼이 추가되었습니다!");
+        } else {
+          console.warn("⚠️ 버튼이 이미 존재합니다.");
+        }
+      }, 1000);
+    }
+  }, []);
+  
+  try {
+      const fileContent = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+      });
+
+      console.log("📖 엑셀 파일 읽기 성공!");
+
+      const workbook = XLSX.read(fileContent, { type: "base64" });
+      processExcelData(workbook, magnetName, setMagnetData);
   } catch (error) {
-    console.error("❌ 엑셀 파일 로드 실패:", error);
-    return null;
+      console.error("❌ 엑셀 파일 로딩 중 오류:", error);
   }
 };
 
-// 엑셀 데이터 로드 함수
-const loadExcelData = async (magnetName, setMagnetData) => {
-  try {
-    console.log("🔍 선택된 Magnet:", magnetName);
 
-    // 📌 fileUri를 정확히 받아오기
-    const fileUri = await copyExcelToLocal();
-    if (!fileUri) {
-      console.error("❌ 파일을 찾을 수 없습니다.");
+// 🟢 엑셀 데이터를 처리하는 함수 (웹/모바일 공통 사용)
+const processExcelData = (workbook, magnetName, setMagnetData) => {
+  const sheetName = "Magnet";
+  const sheet = workbook.Sheets[sheetName];
+
+  if (!sheet) {
+      console.error(`❌ 시트 '${sheetName}'를 찾을 수 없습니다.`);
       return;
-    }
+  }
 
-    console.log("✅ 로컬 저장된 엑셀 파일 경로:", fileUri);
+  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  console.log("📊 변환된 엑셀 데이터:", jsonData);
 
-    const fileContent = await FileSystem.readAsStringAsync(fileUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    const workbook = XLSX.read(fileContent, { type: "base64" });
-    const sheetName = "Magnet";
-
-    const sheet = workbook.Sheets[sheetName];
-    if (!sheet) {
-      console.error(`❌ 시트 '${sheetName}'을 찾을 수 없습니다.`);
-      return;
-    }
-
-    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    console.log("📊 변환된 엑셀 데이터:", jsonData);
-
-    if (jsonData.length === 0) {
+  if (jsonData.length === 0) {
       console.error("❌ 엑셀 데이터가 비어 있습니다.");
       return;
-    }
-
-    const headers = jsonData[0];
-    const rows = jsonData.slice(1).map(row =>
-      Object.fromEntries(headers.map((h, i) => [h, row[i]]))
-    );
-
-    const filteredData = rows.filter(row => row["magnet"]?.trim() === magnetName);
-
-    console.log("✅ 필터링된 데이터:", filteredData);
-    setMagnetData(filteredData);
-  } catch (error) {
-    console.error("❌ Excel 파일 로딩 중 오류:", error);
   }
+
+  const headers = jsonData[0];
+  const rows = jsonData.slice(1).map(row =>
+      Object.fromEntries(headers.map((h, i) => [h, row[i]]))
+  );
+
+  const filteredData = rows.filter(row => row["magnet"].trim() === magnetName);
+  console.log("✅ 필터링된 데이터:", filteredData);
+
+  setMagnetData(filteredData);
 };
+
 
 export default function App() {
   const [screen, setScreen] = useState("home");
