@@ -351,29 +351,51 @@ const loadExcelData = async (magnetName, setMagnetData) => {
       return;
   }
   useEffect(() => {
-    console.log("useEffect 실행됨!");
-  
     if (Platform.OS === "web") {
-      console.warn("⚠️ 웹 환경에서는 `readAsStringAsync()` 실행 불가능. 파일을 직접 업로드해야 합니다.");
-      
+      console.log("🔄 useEffect 실행됨 - 웹 환경 감지");
+  
       setTimeout(() => {
-        const root = document.getElementById("root");
-        if (!document.getElementById("uploadButton") && root) {
-          console.log("버튼 생성 시작...");
-  
-          const button = document.createElement("button");
-          button.id = "uploadButton";
-          button.innerText = "📂 엑셀 파일 업로드";
-          button.style = "padding: 10px; margin-top: 10px; position: fixed; top: 20px; left: 20px; z-index: 1000; background-color: red; color: white;";
-  
-          root.appendChild(button);
-          console.log("✅ 버튼이 추가되었습니다!");
-        } else {
-          console.warn("⚠️ 버튼이 이미 존재합니다.");
+        // 기존 버튼이 있으면 제거 후 새로 추가
+        let existingBtn = document.getElementById("uploadButton");
+        if (existingBtn) {
+          console.warn("⚠️ 기존 업로드 버튼이 존재합니다. 제거 후 새로 생성합니다.");
+          existingBtn.remove();
         }
-      }, 1000);
+  
+        console.log("📌 업로드 버튼 생성 중...");
+        const btn = document.createElement("button");
+        btn.id = "uploadButton";
+        btn.innerText = "📂 엑셀 파일 업로드";
+        btn.style.position = "fixed";
+        btn.style.top = "50px";
+        btn.style.left = "50px";
+        btn.style.zIndex = "9999";
+        btn.style.backgroundColor = "red";
+        btn.style.color = "white";
+        btn.style.padding = "10px";
+        btn.style.marginTop = "10px";
+        btn.style.display = "block";
+        btn.style.visibility = "visible";
+        btn.style.opacity = "1";
+  
+        btn.onclick = () => {
+          console.log("📂 업로드 버튼 클릭됨!");
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = ".xlsx";
+          input.onchange = handleFileUpload;
+          input.click();
+        };
+  
+        document.body.appendChild(btn);  // 🔥 `body`에 추가하여 항상 표시
+        console.log("✅ 업로드 버튼 추가 완료:", btn);
+      }, 1000);  // ✅ 1초 지연 후 추가
     }
   }, []);
+  
+  
+
+
   
   try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
