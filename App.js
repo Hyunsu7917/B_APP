@@ -12,7 +12,6 @@ import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
 import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
-import { View, Text, ScrollView } from "react-native";
 import DynamicTable from "./components/DynamicTable";
 
 const DynamicTable = ({ title, data }) => {
