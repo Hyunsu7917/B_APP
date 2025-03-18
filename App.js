@@ -131,18 +131,40 @@ const downloadFile = async () => {
     let fileUri = FileSystem.documentDirectory + "site.xlsx";  // ✅ 중복 선언 방지
     console.log("📂 저장할 파일 경로:", fileUri);
     
+    console.log("🚀 fetch() 실행 전: 서버에서 파일 요청을 보냅니다.");
     const response = await fetch(FILE_URL, {
       method: "GET",
       headers: {
         "Authorization": `Basic ${encodedAuth}`,
-        "Accept": "*/*",
+        "Accept": "*/*"
       }
     });
+    console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
+
+    // 📂 서버에서 받은 응답 타입 확인 (엑셀 파일인지 체크)
+    console.log("📂 응답 데이터 타입 확인:", response.headers.get("content-type"));
+    if (response.headers.get("content-type")?.includes("spreadsheet")) {
+      console.log("✅ 서버에서 XLSX 파일 응답을 받았습니다!");
+    } else {
+      console.warn("⚠️ 예상치 못한 응답을 받음! 서버에서 다른 타입의 데이터를 보냄.");
+    }
+
+    // 🔴 에러 응답일 경우, 서버 응답 내용 확인
+    if (!response.ok) {
+      console.error("❌ 서버 응답 오류! 상태 코드:", response.status);
+      const responseText = await response.text();
+      console.log("📂 서버 응답 데이터 (앞 500자):", responseText.substring(0, 500));
+      return;
+    }
     
     console.log("📂 서버 응답 Content-Type:", response.headers.get("content-type"));
     console.log("🔍 서버 응답 상태 코드:", response.status);
     console.log("🔍 서버 응답 헤더:", response.headers);
     
+    console.log("📌 응답을 텍스트로 변환 시도 중...");
+    const responseText = await response.text();
+    console.log("✅ 변환 완료! 서버 응답 데이터:", responseText.substring(0, 500));
+
     if (!response.ok) {
       console.error("❌ 파일 다운로드 실패 (서버 응답 오류):", response.status);
       return;
@@ -192,9 +214,11 @@ const downloadExcel = async () => {
       console.warn("⚠️ 웹 환경에서는 다운로드 기능을 사용할 수 없습니다.");
       return;
     }
-  
+
+    console.log("📂 ✅ downloadFile() 함수가 실행되었습니다!");  // 🔥 `downloadFile()` 실행 전 로그 추가
     const fileUri = await downloadFile();  // 🔥 파일 다운로드 실행
     console.log("📂 다운로드된 파일 경로:", fileUri);
+
 
     if (!fileUri) {
       console.error("❌ 파일 다운로드 실패: fileUri가 없음");
@@ -421,10 +445,9 @@ const loadExcelData = async (magnetName, setMagnetData) => {
   }
     
   try {
-      const fileContent = await FileSystem.readAsStringAsync(fileUri, {
-          encoding: FileSystem.EncodingType.Base64,
-      });
-
+      const fileContent = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+      console.log("📂 저장된 파일(Base64) 첫 100자:", fileContent.substring(0, 100));
+    
       console.log("📖 엑셀 파일 읽기 성공!");
 
       const workbook = XLSX.read(fileContent, { type: "base64" });
@@ -588,6 +611,7 @@ export default function App() {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
+      console.log("📂 🚀 fetch() 요청을 실행합니다! (파일 다운로드 시작)");
       const response = await fetch(API_URL, {
         method: "POST",
         body: formData,
