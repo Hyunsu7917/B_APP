@@ -113,19 +113,21 @@ const arrayBufferToBase64 = (buffer) => {
 };
 
 // ✅ downloadFile 함수 정의 시작 (함수 바깥에 return이 있으면 안 됨!)
+import { useEffect } from 'react';
+
 const downloadFile = async () => {
   console.log("🚀✅ downloadFile() 함수 실행됨!");
 
   if (Platform.OS === "web") {
     console.warn("⚠️ 웹 환경에서는 파일 다운로드 기능을 사용할 수 없습니다.");
-    return null;  // ✅ 반드시 함수 내부에서 return 되어야 함
+    return null;
   }
 
   try {
     console.log("📥 파일 다운로드 시작...");
     console.log("🔑 Encoded Auth:", encodedAuth);
 
-    let fileUri = FileSystem.documentDirectory + "site.xlsx";  // ✅ 중복 선언 방지
+    let fileUri = FileSystem.documentDirectory + "site.xlsx";  // ✅ 저장할 파일 경로
     console.log("📂 저장할 파일 경로:", fileUri);
 
     console.log("🚀 fetch() 실행 전: 서버에서 파일 요청을 보냅니다.");
@@ -137,32 +139,60 @@ const downloadFile = async () => {
       }
     });
     console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
-    
-    // 🔥 응답 클론을 생성하여 텍스트 변환 시도
-    const responseClone = response.clone(); // ✅ 응답 복사
-    const responseText = await responseClone.text(); 
+
+    // ✅ 서버 응답 복사하여 텍스트 변환 (원본 응답 유지)
+    const responseClone = response.clone();
+    const responseText = await responseClone.text();
     console.log("📂 서버 응답 데이터 (앞 500자):", responseText.substring(0, 500));
-    
+
     // ✅ 응답이 XLSX 파일인지 확인
     console.log("📂 응답 데이터 타입 확인:", response.headers.get("content-type"));
     if (response.headers.get("content-type")?.includes("spreadsheet")) {
       console.log("✅ 서버에서 XLSX 파일 응답을 받았습니다!");
     } else {
       console.warn("⚠️ 예상치 못한 응답을 받음! 서버에서 다른 타입의 데이터를 보냄.");
+      return;
     }
-    
+
     // ✅ 응답이 정상인지 확인 (에러 응답 처리)
     if (!response.ok) {
       console.error("❌ 파일 다운로드 실패 (서버 응답 오류):", response.status);
       return;
     }
-    
+
     // 🔥 Blob 데이터 변환 시도
     const fileData = await response.blob();
     console.log("📂 다운로드된 Blob 데이터 크기:", fileData.size);
-    
 
-    fileReader.readAsDataURL(fileData);
+    if (!fileData || fileData.size === 0) {
+      console.error("❌ 다운로드된 파일이 비어 있음 (blob 변환 실패)");
+      return;
+    }
+
+    // 🔥 Base64 변환 및 저장 시도
+    console.log("📂 파일을 Base64로 변환 시작...");
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(",")[1];
+
+      if (!base64Data) {
+        console.error("❌ Base64 변환 실패: 데이터가 비어 있음.");
+        return;
+      }
+
+      console.log("📂 Base64 변환 완료, 파일 저장 시도...");
+      try {
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+        console.log("✅ 파일 저장 성공:", fileUri);
+
+        const fileInfo = await FileSystem.getInfoAsync(fileUri);
+        console.log("📂 저장된 파일 정보:", fileInfo);
+      } catch (error) {
+        console.error("❌ 파일 저장 실패:", error);
+      }
+    };
+
+    reader.readAsDataURL(fileData);
     return fileUri;  // ✅ 다운로드된 파일 경로 반환
 
   } catch (error) {
@@ -171,6 +201,11 @@ const downloadFile = async () => {
   }
 };
 
+// ✅ `useEffect`로 컴포넌트가 처음 마운트될 때 `downloadFile()` 실행
+useEffect(() => {
+  console.log("🚀✅ useEffect 실행됨, downloadFile() 호출 시도!");
+  downloadFile();
+}, []);
 
 // 📌 기존 downloadExcel 유지 (downloadFile 호출)
 const downloadExcel = async () => {
