@@ -226,7 +226,7 @@ const downloadFile = async () => {
       console.log("📌 setMagnetData 호출됨! 저장할 데이터:", parsedData);
     };
 
-    reader.readAsBinaryString(fileData); // ✅ `readAsBinaryString` 사용!
+    reader.readAsArrayBuffer(fileData); // ✅ `readAsBinaryString` 사용!
 
     reader.onloadend = async () => {
       const base64Data = reader.result.split(",")[1];
@@ -480,7 +480,7 @@ const handleFileUpload = (file, sheetName, setData) => {
     }
   };
 
-  reader.readAsBinaryString(file); // 🔥 `readAsDataURL` 대신 `readAsBinaryString` 사용
+  reader.readAsArrayBuffer(file); // 🔥 `readAsDataURL` 대신 `readAsBinaryString` 사용
 };
 
 
