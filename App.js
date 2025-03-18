@@ -565,6 +565,7 @@ export default function App() {
   const [selectedConsole, setSelectedConsole] = useState(null);
   const [selectedProbes, setSelectedProbes] = useState([]);
   const [selectedAccessories, setSelectedAccessories] = useState([]);
+  const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
   const [selectedUtilities, setSelectedUtilities] = useState([]);
   const [magnetData, setMagnetData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -572,6 +573,7 @@ export default function App() {
     Console: selectedConsole,
     Probes: selectedProbes,
     Accessories: selectedAccessories,
+    CPPandCRP: selectedCPPandCRP,  
     Utilities: selectedUtilities,
   });
   useEffect(() => {
@@ -772,7 +774,20 @@ export default function App() {
       {screen === "accessories" && (
         <View>
           <Text style={styles.title}>Accessories</Text>
-          {["Autosampler", "BCU", "CPP&CRP"].map(item => (
+          {["Sample Case 24","Sample Case Plus","Sample Case Heated & Cooled","Sample Jet", "BCU",].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAccessories, setSelectedAccessories)}>
+              <Text style={[styles.menuText, selectedAccessories.includes(item) ? styles.selected : null]}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("CPPandCRP")} disabled={selectedAccessories.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
+        </View>
+      )}
+
+      {screen === "CPPandCRP" && (
+        <View>
+          <Text style={styles.title}>Accessories</Text>
+          {["Prodigy","LN2dewar","CU","Outdoor", "indoor","Water Cooled"].map(item => (
             <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAccessories, setSelectedAccessories)}>
               <Text style={[styles.menuText, selectedAccessories.includes(item) ? styles.selected : null]}>{item}</Text>
             </TouchableOpacity>
