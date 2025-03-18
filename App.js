@@ -11,6 +11,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
 import * as DocumentPicker from "expo-document-picker";
+import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 
 const username = "BBIOK";
 const password = "Bruker_2025";
@@ -722,16 +723,16 @@ export default function App() {
                   {/* ✅ 파일 불러오기 버튼 수정 */}
                   <TouchableOpacity
                     style={styles.Sbutton}
-                    onPress={() => {
-                      <TouchableOpacity onPress={pickFile} style={styles.Sbutton}>
-                        <Text style={styles.buttonText}>파일 불러오기</Text>
-                      </TouchableOpacity>
-                    
+                    onPress={async () => {
+                      const file = await pickFile();
+                      if (file) {
+                        console.log("📂 선택된 파일:", file);
+                        // 파일을 업로드하는 추가 로직 작성 가능
+                      }
                     }}
                   >
                     <Text style={styles.buttonText}>파일 불러오기</Text>
                   </TouchableOpacity>
-
 
                   {/* ✅ 숨겨진 파일 입력 필드 */}
                   <TouchableOpacity onPress={pickFile} style={styles.Sbutton}>
