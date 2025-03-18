@@ -138,7 +138,6 @@ const downloadFile = async () => {
     console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
 
     // ✅ 서버 응답 복사하여 텍스트 변환 (원본 응답 유지)
-    // 🔥 응답 클론을 생성하여 텍스트 변환 시도
     const responseClone = response.clone(); // ✅ 응답 복사
     const responseText = await responseClone.text(); 
     console.log("📂 서버 응답 데이터 (앞 500자):", responseText.substring(0, 500));
@@ -162,7 +161,6 @@ const downloadFile = async () => {
       return;
     }
    
-
     if (!fileData || fileData.size === 0) {
       console.error("❌ 다운로드된 파일이 비어 있음 (blob 변환 실패)");
       return;
@@ -171,6 +169,21 @@ const downloadFile = async () => {
     // 🔥 Base64 변환 및 저장 시도
     console.log("📂 파일을 Base64로 변환 시작...");
     const reader = new FileReader();
+
+    reader.onload = () => {
+      const binaryStr = reader.result;
+      const workbook = XLSX.read(binaryStr, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const parsedData = XLSX.utils.sheet_to_json(sheet);
+
+      // ✅ 여기에서 데이터 저장!
+      setMagnetData(parsedData);
+      console.log("📌 setMagnetData 호출됨! 저장할 데이터:", parsedData);
+    };
+
+    reader.readAsBinaryString(fileData); // ✅ `readAsBinaryString` 사용!
+
     reader.onloadend = async () => {
       const base64Data = reader.result.split(",")[1];
 
@@ -199,6 +212,7 @@ const downloadFile = async () => {
     return null;
   }
 };
+
 
 // ✅ `useEffect`로 컴포넌트가 처음 마운트될 때 `downloadFile()` 실행
 useEffect(() => {
@@ -775,62 +789,59 @@ export default function App() {
               >
                   <Text style={styles.title}>Final Data</Text>
 
-                  {console.log("Final 화면의 magnetData: ", magnetData)}
+                  {console.log("📌 Final 화면의 magnetData: ", magnetData)}
 
-                  return (
-                      <View>
-                          {Array.isArray(magnetData) && magnetData.length > 0 ? (  // ✅ 빈 배열 문제 해결
-                              <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center" }]}>
-                                  <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
-                                      {Object.entries(magnetData[0]).map(([key, value], index) => (
-                                          <View key={index} style={styles.row}>
-                                              <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                                              <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-                                          </View>
-                                      ))}
-                                  </ScrollView>
-                              </View>
-                          ) : (
-                              <Text>No Data Available</Text>
-                          )}
+                  {/* ✅ JSX 내부에서는 return 필요 없음! */}
+                  {Array.isArray(magnetData) && magnetData.length > 0 ? (  
+                      <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center" }]}>
+                          <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
+                              {Object.entries(magnetData[0]).map(([key, value], index) => (
+                                  <View key={index} style={styles.row}>
+                                      <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+                                      <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+                                  </View>
+                              ))}
+                          </ScrollView>
                       </View>
-                  );
+                  ) : (
+                      <Text>No Data Available</Text>
+                  )}
 
+                  {/* 🔥 Restart 버튼 */}
                   <TouchableOpacity
-                    style={styles.Sbutton}
-                    onPress={() => {
-                      // 모든 선택 상태 초기화
-                      setSelectedMagnet(null);
-                      setSelectedConsole(null);
-                      setSelectedProbes([]);
-                      setSelectedAccessories([]);
-                      setSelectedUtilities([]);
-                      setMagnetData([]);  // 엑셀 데이터도 초기화
-                      setScreen("home");  // 홈 화면으로 이동
-                    }}
+                      style={styles.Sbutton}
+                      onPress={() => {
+                          // 모든 선택 상태 초기화
+                          setSelectedMagnet(null);
+                          setSelectedConsole(null);
+                          setSelectedProbes([]);
+                          setSelectedAccessories([]);
+                          setSelectedUtilities([]);
+                          setMagnetData([]);  // 엑셀 데이터도 초기화
+                          setScreen("home");  // 홈 화면으로 이동
+                      }}
                   >
-                    <Text style={styles.buttonText}>Restart</Text>
+                      <Text style={styles.buttonText}>Restart</Text>
                   </TouchableOpacity>
 
-
-
-                  {/* ✅ 파일 불러오기 버튼 수정 */}
+                  {/* 🔥 파일 불러오기 버튼 */}
                   <TouchableOpacity
-                    style={styles.Sbutton}
-                    onPress={async () => {
-                      const file = await pickFile();
-                      if (file) {
-                        console.log("📂 선택된 파일:", file);
-                        // 파일을 업로드하는 추가 로직 작성 가능
-                      }
-                    }}
+                      style={styles.Sbutton}
+                      onPress={async () => {
+                          const file = await pickFile();
+                          if (file) {
+                              console.log("📂 선택된 파일:", file);
+                              // 파일을 업로드하는 추가 로직 작성 가능
+                          }
+                      }}
                   >
-                    <Text style={styles.buttonText}>파일 불러오기</Text>
+                      <Text style={styles.buttonText}>파일 불러오기</Text>
                   </TouchableOpacity>
-                 
+              
               </ScrollView>
           </View>
       )}
+
 
 
     </View>
