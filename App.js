@@ -447,10 +447,10 @@ const handleFileUpload = (file, magnetName, setMagnetData) => {
 
     console.log("📖 엑셀 파일 로드 완료!", workbook);
 
-    if (setMagnetData) {
+    if (typeof setMagnetData === "function") {
       processExcelData(workbook, magnetName, setMagnetData);
     } else {
-      console.error("❌ setMagnetData 함수가 정의되지 않았습니다!");
+      console.error("❌ setMagnetData가 정의되지 않았습니다! 해당 데이터를 업데이트할 수 없습니다.");
     }
   };
 
