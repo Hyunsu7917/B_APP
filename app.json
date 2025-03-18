@@ -55,8 +55,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0,
       "checkAutomatically": "ON_LOAD",
-      "url": "https://u.expo.dev/3a8db303-b445-445e-9dd5-ea2257ed0dc3",
-      "channel": "main"
+      "url": "https://u.expo.dev/3a8db303-b445-445e-9dd5-ea2257ed0dc3"      
     },
     "extra": {
       "router": {

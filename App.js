@@ -30,7 +30,12 @@ const checkFileInfo = async () => {
 
   try {
       const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
-      console.log("📂 파일 정보:", fileInfo);
+      console.log("📂 저장된 파일 정보:", fileInfo);
+      
+      if (!fileInfo.exists || fileInfo.size < 1000) {
+      console.error("❌ 다운로드된 파일이 손상됨! (파일 크기 너무 작음)");
+    }
+    
   } catch (error) {
       console.error("❌ 파일 정보 가져오기 실패:", error);
   }
@@ -114,7 +119,7 @@ const arrayBufferToBase64 = (buffer) => {
 };
 
 const downloadFile = async () => {
-  if (Platform.OS === "web") {
+    if (Platform.OS === "web") {
     console.warn("⚠️ 웹 환경에서는 파일 다운로드 기능을 사용할 수 없습니다.");
     return null;
   }
@@ -123,59 +128,52 @@ const downloadFile = async () => {
     console.log("📥 파일 다운로드 시작...");
     console.log("🔑 Encoded Auth:", encodedAuth);
 
-    const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";
-    console.log("📂 저장할 파일 경로:", FILE_PATH);
-
+    let fileUri = FileSystem.documentDirectory + "site.xlsx";  // ✅ 중복 선언 방지
+    console.log("📂 저장할 파일 경로:", fileUri);
+    
     const response = await fetch(FILE_URL, {
       method: "GET",
       headers: {
         "Authorization": `Basic ${encodedAuth}`,
-        "Accept": "*/*"
+        "Accept": "*/*",
       }
     });
-
+    
+    console.log("📂 서버 응답 Content-Type:", response.headers.get("content-type"));
     console.log("🔍 서버 응답 상태 코드:", response.status);
     console.log("🔍 서버 응답 헤더:", response.headers);
-
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ 서버 응답 오류:", response.status, errorText);
-      return null;
-    }
-    // 🔹 서버에서 실제로 파일을 보내고 있는지 확인
-    const contentType = response.headers.get("content-type");
-    console.log("📂 서버 응답 Content-Type:", contentType);
-
-    if (!contentType.includes("spreadsheet")) {
-      console.error("❌ 잘못된 응답: 예상한 엑셀 파일이 아님!", contentType);
+      console.error("❌ 파일 다운로드 실패 (서버 응답 오류):", response.status);
       return;
-}
-
+    }
+    
     const fileData = await response.blob();
-    console.log("📂 다운로드된 Blob 데이터:", fileData);
-    const fileUri = FILE_PATH;  // 🔥 다운로드 후 사용할 파일 경로
+    console.log("📂 다운로드된 Blob 데이터 크기:", fileData.size);
+    
+    if (!fileData || fileData.size === 0) {
+      console.error("❌ 다운로드된 파일이 비어 있음 (blob 변환 실패)");
+      return;
+    }
+    
+    // ✅ fileUri 중복 선언 제거
     console.log("📂 다운로드된 파일 경로:", fileUri);
-
+    
     const fileReader = new FileReader();
     fileReader.onloadend = async () => {
       const base64Data = fileReader.result.split(",")[1];
-
+    
       if (!base64Data) {
         console.error("❌ 다운로드된 파일이 비어 있습니다.");
-        return null;
+        return;
       }
-
+    
       console.log("📂 파일이 Base64로 변환 완료, 저장 시도...");
-      await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-
-      const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
-      console.log("📁 저장된 파일 정보:", fileInfo);
-
-      if (!fileInfo.exists || fileInfo.size < 1000) {
-        console.error("❌ 다운로드된 파일이 손상됨! (파일 크기 너무 작음)");
-      }
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+    
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      console.log("📂 저장된 파일 정보:", fileInfo);
     };
-
     fileReader.readAsDataURL(fileData);
     return fileUri;  // 🔥 파일 경로 반환
   } catch (error) {
@@ -348,11 +346,15 @@ const handleFileUpload = (file, magnetName, setMagnetData) => {
   console.log("🔎 현재 선택된 Magnet:", magnetName);
 
   const reader = new FileReader();
+
   reader.onload = (e) => {
     const binaryStr = e.target.result;
+    console.log("📂 변환된 Base64 데이터 (앞부분 100자):", binaryStr.substring(0, 100)); // 일부만 출력
+
     const workbook = XLSX.read(binaryStr, { type: "binary" });
 
-    console.log("📊 엑셀 파일 로드 완료!", workbook);
+    console.log("📖 엑셀 파일 로드 완료!", workbook);
+
     if (setMagnetData) {
       processExcelData(workbook, magnetName, setMagnetData);
     } else {
@@ -360,11 +362,8 @@ const handleFileUpload = (file, magnetName, setMagnetData) => {
     }
   };
 
-  reader.onerror = (error) => {
-    console.error("❌ 파일 읽기 오류:", error);
-  };
+  reader.readAsDataURL(fileData);
 
-  reader.readAsBinaryString(file);
 };
 
 
