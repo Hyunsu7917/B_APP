@@ -138,9 +138,14 @@ const downloadFile = async () => {
     console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
 
     // ✅ 서버 응답 복사하여 텍스트 변환 (원본 응답 유지)
-    const responseClone = response.clone();
-    const responseText = await responseClone.text();
+    // 🔥 응답 클론을 생성하여 텍스트 변환 시도
+    const responseClone = response.clone(); // ✅ 응답 복사
+    const responseText = await responseClone.text(); 
     console.log("📂 서버 응답 데이터 (앞 500자):", responseText.substring(0, 500));
+
+    // 🔥 Blob 데이터 변환 시도
+    const fileData = await response.blob();
+    console.log("📂 다운로드된 Blob 데이터 크기:", fileData.size);
 
     // ✅ 응답이 XLSX 파일인지 확인
     console.log("📂 응답 데이터 타입 확인:", response.headers.get("content-type"));
@@ -156,10 +161,7 @@ const downloadFile = async () => {
       console.error("❌ 파일 다운로드 실패 (서버 응답 오류):", response.status);
       return;
     }
-
-    // 🔥 Blob 데이터 변환 시도
-    const fileData = await response.blob();
-    console.log("📂 다운로드된 Blob 데이터 크기:", fileData.size);
+   
 
     if (!fileData || fileData.size === 0) {
       console.error("❌ 다운로드된 파일이 비어 있음 (blob 변환 실패)");
@@ -515,6 +517,10 @@ export default function App() {
     Utilities: selectedUtilities,
   });
   useEffect(() => {
+    console.log("📂 Final 화면의 magnetData: ", magnetData);
+  }, [magnetData]);  // ✅ magnetData가 변경될 때마다 로그 출력
+
+  useEffect(() => {
     if (selectedMagnet && fileContent) {
       console.log("📢 Magnet 변경 감지! 데이터 다시 불러오기...");
       loadExcelData(selectedMagnet, setMagnetData);
@@ -771,20 +777,24 @@ export default function App() {
 
                   {console.log("Final 화면의 magnetData: ", magnetData)}
 
-                  {magnetData.length > 0 ? (
-                      <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center"}]}>
-                          <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
-                              {Object.entries(magnetData[0]).map(([key, value], index) => (
-                                  <View key={index} style={styles.row}>
-                                      <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                                      <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-                                  </View>
-                              ))}
-                          </ScrollView>
+                  return (
+                      <View>
+                          {Array.isArray(magnetData) && magnetData.length > 0 ? (  // ✅ 빈 배열 문제 해결
+                              <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center" }]}>
+                                  <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
+                                      {Object.entries(magnetData[0]).map(([key, value], index) => (
+                                          <View key={index} style={styles.row}>
+                                              <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+                                              <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+                                          </View>
+                                      ))}
+                                  </ScrollView>
+                              </View>
+                          ) : (
+                              <Text>No Data Available</Text>
+                          )}
                       </View>
-                  ) : (
-                      <Text>No Data Available</Text>
-                  )}
+                  );
 
                   <TouchableOpacity
                     style={styles.Sbutton}
