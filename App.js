@@ -606,7 +606,7 @@ export default function App() {
     "cppandcrp",
     "utilities"
   ];
-    
+  console.log("🚀 초기 screen 상태:", screen); // ✅ 초기값 확인용
   useEffect(() => {
     console.log("📂 Final 화면의 magnetData: ", magnetData);
   }, [magnetData]);  // ✅ magnetData가 변경될 때마다 로그 출력
@@ -769,7 +769,7 @@ export default function App() {
     <View style={styles.container}>
     
       {/* 🏠 시작 화면 */}
-      {screen === "home" && (
+      {props.screen === "home" && (
         <View>
           <Text style={styles.title}>BBIOK App</Text>
             <TouchableOpacity
@@ -782,7 +782,7 @@ export default function App() {
       )}
 
       {/* 📌 사이트 플랜 화면 */}
-      {screen === "sitePlan" && (
+      {props.screen === "sitePlan" && (
         <View>
           <Text style={styles.title}>Site Plan</Text>
           <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
@@ -793,7 +793,7 @@ export default function App() {
       )}
 
       {/* 🔄 개별 항목 선택 화면 */}
-      {screen === "magnet" && (
+      {props.screen === "magnet" && (
         <View>
           <Text style={styles.title}>Magnet</Text>
           {["400core", "400evo", "500evo", "600evo", "700evo"].map(item => (
@@ -806,7 +806,7 @@ export default function App() {
         </View>
       )}
 
-      {screen === "console" && (
+      {props.screen === "console" && (
         <View>
           <Text style={styles.title}>Console</Text>
           {["Nanobay", "Onebay", "Twobay"].map(item => (
@@ -819,7 +819,7 @@ export default function App() {
         </View>
       )}
 
-      {screen === "probe" && (
+      {props.screen === "probe" && (
         <View>
           <Text style={styles.title}>Probe</Text>
           {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
@@ -832,7 +832,7 @@ export default function App() {
         </View>
       )}
 
-      {screen === "AutoSampler" && (
+      {props.screen === "AutoSampler" && (
         <View>
           <Text style={styles.title}>AutoSampler</Text>
           {["Sample Case 24","Sample Case Plus","Sample Case Heated & Cooled","Sample Jet", "BCU",].map(item => (
@@ -845,7 +845,7 @@ export default function App() {
         </View>
       )}
 
-      {screen === "CPPandCRP" && (
+      {props.screen === "CPPandCRP" && (
         <View>
           <Text style={styles.title}>CPPandCRP</Text>
           {["Prodigy","LN2dewar","CU","Outdoor", "indoor","Water Cooled"].map(item => (
@@ -858,7 +858,7 @@ export default function App() {
         </View>
       )}
 
-      {screen === "utilities" && (
+      {props.screen === "utilities" && (
         <View>
           <Text style={styles.title}>Utilities</Text>
           {["UPS", "Compressor", "Dryer"].map(item => (
@@ -872,7 +872,7 @@ export default function App() {
       )}
 
       {/* 🛠 Summary 화면 */}
-      {screen === "summary" && (
+      {props.screen === "summary" && (
         <View>
           <Text style={styles.title}>Summary</Text>
           <View style={styles.summaryTable}>
@@ -896,7 +896,7 @@ export default function App() {
 
       {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
         
-      {screen === "final" && selectedMagnet && (
+      {props.screen === "final" && selectedMagnet && (
           <View style={{ flex: 1, width: "100%" }}>
               <ScrollView 
                   style={{ flex: 1, width: "100%" }}
