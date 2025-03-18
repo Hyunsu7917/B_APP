@@ -673,9 +673,10 @@ export default function App() {
       Console: selectedConsole,
       Probes: selectedProbes.join(", "), // 배열을 문자열로 변환
       Accessories: selectedAccessories.join(", "),
+      CPPandCRP: selectedCPPandCRP.join(", "),
       Utilities: selectedUtilities.join(", "),
     });
-  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAccessories, selectedUtilities]);
+  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAccessories, selectedCPPandCRP, selectedUtilities]);
   
   const API_URL = "http://192.168.1.13:5000/assets/site.xlsx";
 
