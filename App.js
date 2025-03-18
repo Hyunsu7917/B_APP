@@ -135,14 +135,24 @@ const downloadFile = async () => {
     });
 
     console.log("🔍 서버 응답 상태 코드:", response.status);
+    console.log("🔍 서버 응답 헤더:", response.headers);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ 서버 응답 오류:", response.status, errorText);
       return null;
     }
+    // 🔹 서버에서 실제로 파일을 보내고 있는지 확인
+    const contentType = response.headers.get("content-type");
+    console.log("📂 서버 응답 Content-Type:", contentType);
+
+    if (!contentType.includes("spreadsheet")) {
+      console.error("❌ 잘못된 응답: 예상한 엑셀 파일이 아님!", contentType);
+      return;
+}
 
     const fileData = await response.blob();
+    console.log("📂 다운로드된 Blob 데이터:", fileData);
     const fileUri = FILE_PATH;  // 🔥 다운로드 후 사용할 파일 경로
     console.log("📂 다운로드된 파일 경로:", fileUri);
 
@@ -156,8 +166,14 @@ const downloadFile = async () => {
       }
 
       console.log("📂 파일이 Base64로 변환 완료, 저장 시도...");
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-      console.log("✅ 파일 저장 완료:", fileUri);
+      await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+
+      const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
+      console.log("📁 저장된 파일 정보:", fileInfo);
+
+      if (!fileInfo.exists || fileInfo.size < 1000) {
+        console.error("❌ 다운로드된 파일이 손상됨! (파일 크기 너무 작음)");
+      }
     };
 
     fileReader.readAsDataURL(fileData);
