@@ -98,7 +98,7 @@ const arrayBufferToBase64 = (buffer) => {
 const downloadFile = async () => {
   if (Platform.OS === "web") {
     console.warn("⚠️ 웹 환경에서는 파일 다운로드 기능을 사용할 수 없습니다.");
-    return;
+    return null;
   }
 
   try {
@@ -106,7 +106,6 @@ const downloadFile = async () => {
     console.log("🔑 Encoded Auth:", encodedAuth);
 
     const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";
-
     console.log("📂 저장할 파일 경로:", FILE_PATH);
 
     const response = await fetch(FILE_URL, {
@@ -118,36 +117,47 @@ const downloadFile = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`서버 응답 오류: ${response.status}`);
+      throw new Error(`❌ 서버 응답 오류: ${response.status}`);
     }
 
-    const fileData = await response.blob();
+    console.log("✅ 서버 응답 성공, 파일 다운로드 진행 중...");
 
-    // 🔹 **웹에서는 FileSystem.writeAsStringAsync 실행 X**
-    if (Platform.OS === "web") {
-      console.warn("⚠️ 웹 환경에서는 파일을 저장할 수 없습니다.");
-      return;
-  }
-  
+    const fileData = await response.blob();
 
     const reader = new FileReader();
 
     reader.onloadend = async () => {
-      const base64Data = reader.result.split(",")[1];
-
       try {
+        const base64Data = reader.result.split(",")[1];
+
+        // 파일 저장
         await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-        console.log("✅ 파일 다운로드 성공! 저장된 경로:", FILE_PATH);
+
+        console.log("✅ 파일 저장 완료! 최종 경로:", FILE_PATH);
+
+        // ✅ 파일이 정상적으로 저장되었는지 다시 확인
+        const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
+        console.log("📁 저장된 파일 정보:", fileInfo);
+
+        if (!fileInfo.exists) {
+          throw new Error("❌ 파일이 저장되지 않았습니다.");
+        }
+
       } catch (error) {
         console.error("❌ 파일 저장 실패:", error);
       }
     };
 
     reader.readAsDataURL(fileData);
+
+    return FILE_PATH;  // ✅ `downloadExcel()`에서 사용할 수 있도록 경로 반환
+
   } catch (error) {
     console.error("❌ 파일 다운로드 실패:", error);
+    return null;
   }
 };
+
 
 // 📌 기존 downloadExcel 유지 (downloadFile 호출)
 const downloadExcel = async () => {
@@ -733,12 +743,7 @@ export default function App() {
                   >
                     <Text style={styles.buttonText}>파일 불러오기</Text>
                   </TouchableOpacity>
-
-                  {/* ✅ 숨겨진 파일 입력 필드 */}
-                  <TouchableOpacity onPress={pickFile} style={styles.Sbutton}>
-                    <Text style={styles.buttonText}>파일 불러오기</Text>
-                  </TouchableOpacity>
-
+                 
               </ScrollView>
           </View>
       )}
