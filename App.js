@@ -787,14 +787,14 @@ export default function App() {
 
       {screen === "CPPandCRP" && (
         <View>
-          <Text style={styles.title}>Accessories</Text>
+          <Text style={styles.title}>CPPandCRP</Text>
           {["Prodigy","LN2dewar","CU","Outdoor", "indoor","Water Cooled"].map(item => (
-            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAccessories, setSelectedAccessories)}>
-              <Text style={[styles.menuText, selectedAccessories.includes(item) ? styles.selected : null]}>{item}</Text>
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedCPPandCRP, setSelectedCPPandCRP)}>
+              <Text style={[styles.menuText, selectedCPPandCRP.includes(item) ? styles.selected : null]}>{item}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigateTo("utilities")} disabled={selectedAccessories.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("utilities")} disabled={selectedCPPandCRP.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
         </View>
       )}
 
