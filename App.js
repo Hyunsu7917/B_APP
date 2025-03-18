@@ -789,29 +789,26 @@ export default function App() {
               >
                   <Text style={styles.title}>Final Data</Text>
 
+                  {/* 🔥 magnetData 업데이트 감지 */}
                   {console.log("📌 Final 화면의 magnetData: ", magnetData)}
 
-                  {/* ✅ JSX 내부에서는 return 필요 없음! */}
-                  {Array.isArray(magnetData) && magnetData.length > 0 ? (  
-                      <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center" }]}>
-                          <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
-                              {Object.entries(magnetData[0]).map(([key, value], index) => (
-                                  <View key={index} style={styles.row}>
-                                      <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                                      <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-                                  </View>
-                              ))}
-                          </ScrollView>
-                      </View>
-                  ) : (
-                      <Text>No Data Available</Text>
-                  )}
+                  {/* ✅ magnetData가 undefined일 경우 대비 */}
+                  <View>
+                      {console.log("📌 Final 화면에서 magnetData 상태 확인:", JSON.stringify(magnetData, null, 2))}
+                      {magnetData.length > 0 && Object.entries(magnetData[0] || {}).map(([key, value], index) => (
+                          <View key={index} style={styles.row}>
+                              <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+                              <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+                          </View>
+                      ))}
+                      {/* 데이터 없을 경우 메시지 */}
+                      {magnetData.length === 0 && <Text>No Data Available</Text>}
+                  </View>
 
                   {/* 🔥 Restart 버튼 */}
                   <TouchableOpacity
                       style={styles.Sbutton}
                       onPress={() => {
-                          // 모든 선택 상태 초기화
                           setSelectedMagnet(null);
                           setSelectedConsole(null);
                           setSelectedProbes([]);
@@ -831,7 +828,6 @@ export default function App() {
                           const file = await pickFile();
                           if (file) {
                               console.log("📂 선택된 파일:", file);
-                              // 파일을 업로드하는 추가 로직 작성 가능
                           }
                       }}
                   >
@@ -841,6 +837,8 @@ export default function App() {
               </ScrollView>
           </View>
       )}
+
+
 
 
 
