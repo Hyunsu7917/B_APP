@@ -38,8 +38,5 @@
   },
   "submit": {
     "production": {}
-  },
-  "update": {
-    "channel": "main"
   }
 }

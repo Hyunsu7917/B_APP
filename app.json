@@ -55,7 +55,8 @@
     "updates": {
       "fallbackToCacheTimeout": 0,
       "checkAutomatically": "ON_LOAD",
-      "url": "https://u.expo.dev/3a8db303-b445-445e-9dd5-ea2257ed0dc3"
+      "url": "https://u.expo.dev/3a8db303-b445-445e-9dd5-ea2257ed0dc3",
+      "channel": "main"
     },
     "extra": {
       "router": {
@@ -65,7 +66,9 @@
         "projectId": "3a8db303-b445-445e-9dd5-ea2257ed0dc3"
       }
     },
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "owner": "khyunsu"
   }
 }
