@@ -564,7 +564,7 @@ export default function App() {
   const [selectedMagnet, setSelectedMagnet] = useState(null);
   const [selectedConsole, setSelectedConsole] = useState(null);
   const [selectedProbes, setSelectedProbes] = useState([]);
-  const [selectedAccessories, setSelectedAccessories] = useState([]);
+  const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
   const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
   const [selectedUtilities, setSelectedUtilities] = useState([]);
   const [magnetData, setMagnetData] = useState([]);
@@ -572,10 +572,21 @@ export default function App() {
     Magnet: selectedMagnet,
     Console: selectedConsole,
     Probes: selectedProbes,
-    Accessories: selectedAccessories,
+    AutoSampler: selectedAutoSampler,
     CPPandCRP: selectedCPPandCRP,  
     Utilities: selectedUtilities,
   });
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const stepScreens = [
+    "magnet",
+    "console",
+    "probe",
+    "AutoSampler",
+    "cppandcrp",
+    "utilities"
+  ];
+    
   useEffect(() => {
     console.log("📂 Final 화면의 magnetData: ", magnetData);
   }, [magnetData]);  // ✅ magnetData가 변경될 때마다 로그 출력
@@ -658,25 +669,54 @@ export default function App() {
   const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
   useEffect(() => {
     if (screen === "final") {
-        console.log("🔄 useEffect 실행됨! (Final 화면)");
-        console.log("📌 선택된 Magnet:", selectedMagnet);  // 선택된 Magnet 확인
-
-        loadExcelData(selectedMagnet, setMagnetData);  // ❌ selectedMagnet이 정확히 전달되는지 확인
-
-        console.log("📊 Final 화면의 magnetData: ", magnetData);
+      console.log("🛠 useEffect 실행됨! (Final 화면)");
+      console.log("📌 현재 Step:", stepScreens[currentStep]);  // 🔥 현재 단계 확인
+  
+      let selectedItem = null;
+      let setDataFunction = null;
+  
+      // ✅ 현재 Step에 맞는 선택된 데이터와 set함수를 매칭
+      switch (stepScreens[currentStep]) {
+        case "magnet":
+          selectedItem = selectedMagnet;
+          setDataFunction = setMagnetData;
+          break;
+        case "console":
+          selectedItem = selectedConsole;
+          setDataFunction = setConsoleData;  // ✅ 콘솔 데이터 저장 함수
+          break;
+        case "AutoSampler":
+          selectedItem = selectedAutoSampler;
+          setDataFunction = setAutoSamplerData;  // ✅ 악세서리 데이터 저장 함수
+          break;
+        case "cppandcrp":
+          selectedItem = selectedCPPandCRP;
+          setDataFunction = setCPPandCRPData;  // ✅ CPP&CRP 데이터 저장 함수
+          break;
+        default:
+          console.warn("⚠️ 해당 Step에 대한 데이터가 없음:", stepScreens[currentStep]);
+          return;
+      }
+  
+      console.log("🔍 선택된 항목:", selectedItem);
+  
+      if (selectedItem) {
+        loadExcelData(selectedItem, setDataFunction);  // ✅ 선택된 항목에 맞는 데이터 로드
+      }
     }
-}, [screen]);
+  }, [screen, currentStep]);  // ✅ `currentStep` 변경 시 실행
+  
 
   useEffect(() => {
     setSummaryData({
       Magnet: selectedMagnet,
       Console: selectedConsole,
       Probes: selectedProbes.join(", "), // 배열을 문자열로 변환
-      Accessories: selectedAccessories.join(", "),
+      AutoSampler: selectedAutoSampler.join(", "),
       CPPandCRP: selectedCPPandCRP.join(", "),
       Utilities: selectedUtilities.join(", "),
     });
-  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAccessories, selectedCPPandCRP, selectedUtilities]);
+  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAutoSampler, selectedCPPandCRP, selectedUtilities]);
   
   const API_URL = "http://192.168.1.13:5000/assets/site.xlsx";
 
@@ -768,20 +808,20 @@ export default function App() {
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigateTo("accessories")} disabled={selectedProbes.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("AutoSampler")} disabled={selectedProbes.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
         </View>
       )}
 
-      {screen === "accessories" && (
+      {screen === "AutoSampler" && (
         <View>
-          <Text style={styles.title}>Accessories</Text>
+          <Text style={styles.title}>AutoSampler</Text>
           {["Sample Case 24","Sample Case Plus","Sample Case Heated & Cooled","Sample Jet", "BCU",].map(item => (
-            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAccessories, setSelectedAccessories)}>
-              <Text style={[styles.menuText, selectedAccessories.includes(item) ? styles.selected : null]}>{item}</Text>
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAutoSampler, setSelectedAutoSampler)}>
+              <Text style={[styles.menuText, selectedAutoSampler.includes(item) ? styles.selected : null]}>{item}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigateTo("CPPandCRP")} disabled={selectedAccessories.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("CPPandCRP")} disabled={selectedAutoSampler.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
         </View>
       )}
 
@@ -849,6 +889,43 @@ export default function App() {
               >
                   <Text style={styles.title}>Final Data</Text>
 
+                  {stepScreens[currentStep] === "magnet" && (
+                    <MagnetTable data={magnetData} />
+                  )}
+
+                  {stepScreens[currentStep] === "console" && (
+                    <ConsoleTable data={consoleData} />
+                  )}
+
+                  {stepScreens[currentStep] === "AutoSampler" && (
+                    <AutoSamplerTable data={AutoSamplerData} />
+                  )}
+
+                  {stepScreens[currentStep] === "cppandcrp" && (
+                    <CPPCRPTable data={cppcrpData} />
+                  )}
+
+                  {/* 🔹 Next / Prev 버튼 추가 */}
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", width: "80%", marginTop: 20 }}>
+                    {currentStep > 0 && (
+                      <TouchableOpacity
+                        style={styles.Sbutton}
+                        onPress={() => setCurrentStep(currentStep - 1)}
+                      >
+                        <Text style={styles.buttonText}>Prev</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {currentStep < stepScreens.length - 1 && (
+                      <TouchableOpacity
+                        style={styles.Sbutton}
+                        onPress={() => setCurrentStep(currentStep + 1)}
+                      >
+                        <Text style={styles.buttonText}>Next</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
                   {/* 🔥 magnetData 업데이트 감지 */}
                   {console.log("📌 Final 화면의 magnetData: ", magnetData)}
 
@@ -872,7 +949,8 @@ export default function App() {
                           setSelectedMagnet(null);
                           setSelectedConsole(null);
                           setSelectedProbes([]);
-                          setSelectedAccessories([]);
+                          setSelectedAutoSampler([]);
+                          setSelectedCPPandCRP([]);
                           setSelectedUtilities([]);
                           setMagnetData([]);  // 엑셀 데이터도 초기화
                           setScreen("home");  // 홈 화면으로 이동
