@@ -111,6 +111,50 @@ useEffect(() => {
 const arrayBufferToBase64 = (buffer) => {
   return Buffer.from(new Uint8Array(buffer)).toString('base64');
 };
+const checkForFileUpdate = async () => {
+  let fileUri = FileSystem.documentDirectory + "site.xlsx";
+
+  try {
+    console.log("🔍 서버에서 최신 파일 정보 확인 중...");
+
+    const response = await fetch(FILE_URL, {
+      method: "HEAD",  // ✅ 파일 내용을 가져오지 않고, 헤더 정보만 확인
+      headers: { "Authorization": `Basic ${encodedAuth}` },
+    });
+
+    if (!response.ok) {
+      console.error("❌ 서버에서 파일 정보를 가져오지 못함!", response.status);
+      return;
+    }
+
+    // 🔥 서버의 최신 수정 날짜 확인
+    const serverLastModified = response.headers.get("Last-Modified");
+    console.log("📅 서버 파일 최종 수정 날짜:", serverLastModified);
+
+    // 🔍 로컬 파일 정보 확인
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    if (fileInfo.exists) {
+      const localLastModified = new Date(fileInfo.modificationTime).toUTCString();
+      console.log("📅 로컬 파일 최종 수정 날짜:", localLastModified);
+
+      // ✅ 최신 파일이면 다운로드하지 않음
+      if (serverLastModified && new Date(serverLastModified) <= new Date(localLastModified)) {
+        console.log("✅ 로컬 파일이 최신 상태입니다. 다운로드 불필요!");
+        return;
+      }
+    }
+
+    // 🔥 서버 파일이 더 최신이면 다운로드 실행!
+    console.log("📥 새로운 파일 다운로드 중...");
+    await downloadFile();
+
+  } catch (error) {
+    console.error("❌ 파일 업데이트 확인 중 오류 발생:", error);
+  }
+};
+useEffect(() => {
+  checkForFileUpdate();  // 앱 시작 시 파일 업데이트 여부 확인
+}, []);
 
 const downloadFile = async () => {
   console.log("🚀✅ downloadFile() 함수 실행됨!");
