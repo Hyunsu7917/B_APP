@@ -14,12 +14,6 @@ import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 import DynamicTable from "./components/DynamicTable";
 
-const DynamicTable = ({ title, data }) => {
-  if (!data || data.length === 0) {
-    return <Text>No Data Available</Text>;
-  }
-}
-
 const username = "BBIOK";
 const password = "Bruker_2025";
 const encodedAuth = Buffer.from(`${username}:${password}`).toString("base64");  // 🔥 수정됨!
