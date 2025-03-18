@@ -115,6 +115,10 @@ const downloadFile = async () => {
         "Accept": "*/*"
       }
     });
+    
+    console.log("🔍 서버 응답 상태 코드:", response.status);
+    console.log("🔍 서버 응답 헤더:", response.headers);
+    
 
     if (!response.ok) {
       throw new Error(`❌ 서버 응답 오류: ${response.status}`);
@@ -123,37 +127,31 @@ const downloadFile = async () => {
     console.log("✅ 서버 응답 성공, 파일 다운로드 진행 중...");
 
     const fileData = await response.blob();
+    const fileReader = new FileReader();
 
-    // ✅ FileReader로 파일을 Base64로 변환 후 저장
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const base64Data = reader.result.split(",")[1];
+    fileReader.onloadend = async () => {
+      const base64Data = fileReader.result.split(",")[1];
 
-        await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-        console.log("✅ 파일 저장 완료! 최종 경로:", FILE_PATH);
-
-        // ✅ 파일이 정상적으로 저장되었는지 다시 확인
-        const fileInfo = await FileSystem.getInfoAsync(FILE_PATH);
-        console.log("📁 저장된 파일 정보:", fileInfo);
-
-        if (!fileInfo.exists) {
-          throw new Error("❌ 파일이 저장되지 않았습니다.");
-        }
-
-      } catch (error) {
-        console.error("❌ 파일 저장 실패:", error);
+      if (!base64Data) {
+        console.error("❌ 다운로드된 파일이 비어 있습니다.");
+        throw new Error("파일 다운로드 실패");
       }
+
+      console.log("📂 파일이 Base64로 변환 완료, 저장 시도...");
+      await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+      console.log("✅ 파일 저장 완료:", FILE_PATH);
     };
 
-    reader.readAsDataURL(fileData);
-    return FILE_PATH;  // ✅ `downloadExcel()`에서 사용할 수 있도록 반환
+    fileReader.readAsDataURL(fileData);
 
-  } catch (error) {
-    console.error("❌ 파일 다운로드 실패:", error);
-    return null;
-  }
-};
+        reader.readAsDataURL(fileData);
+        return FILE_PATH;  // ✅ `downloadExcel()`에서 사용할 수 있도록 반환
+
+      } catch (error) {
+        console.error("❌ 파일 다운로드 실패:", error);
+        return null;
+      }
+    };
 
 // 📌 기존 downloadExcel 유지 (downloadFile 호출)
 const downloadExcel = async () => {
