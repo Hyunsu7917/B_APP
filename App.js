@@ -112,9 +112,6 @@ const arrayBufferToBase64 = (buffer) => {
   return Buffer.from(new Uint8Array(buffer)).toString('base64');
 };
 
-// ✅ downloadFile 함수 정의 시작 (함수 바깥에 return이 있으면 안 됨!)
-import { useEffect } from 'react';
-
 const downloadFile = async () => {
   console.log("🚀✅ downloadFile() 함수 실행됨!");
 
