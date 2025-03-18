@@ -10,6 +10,7 @@ import axios from 'axios';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
+import * as DocumentPicker from "expo-document-picker";
 
 const username = "BBIOK";
 const password = "Bruker_2025";
@@ -55,19 +56,6 @@ const testDownload = async () => {
     console.error("❌ 파일 다운로드 요청 실패:", error);
   }
 };
-
-useEffect(() => {
-  console.log("📢 useEffect 실행됨! 파일 다운로드 시작");
-  downloadExcel();
-  
-  // ✅ 이렇게 호출
-  copyExcelToLocal();
-  if (Platform.OS !== "web") {
-    checkFileInfo();  // ✅ 웹에서는 실행되지 않도록 조건 추가
-  }
-}, []);
-
-
 const checkForUpdates = async () => {
   try {
     const update = await Updates.checkForUpdateAsync();
@@ -177,19 +165,6 @@ const downloadExcel = async () => {
     console.error("❌ [React Native] downloadExcel 실패:", error);
   }
 };
-// 📌 useEffect에서도 `downloadExcel`을 실행하도록 유지
-useEffect(() => {
-  console.log("📢 useEffect 실행됨! 파일 다운로드 시작");
-
-  if (Platform.OS !== "web") {
-      downloadExcel();
-      checkFileInfo();
-  } else {
-      console.warn("⚠️ 웹 환경에서는 파일 다운로드 및 확인 기능을 사용할 수 없습니다.");
-  }
-}, []);
-
-
 export const uploadExcel = async (file) => {
   const formData = new FormData();
   formData.append('file', {
@@ -237,13 +212,41 @@ const copyExcelToLocal = async () => {
           uploadButton.innerText = "📂 엑셀 파일 업로드";
           uploadButton.style = "padding: 10px; margin-top: 10px; display:block;";
 
-          uploadButton.onclick = () => {
-              console.log("📂 업로드 버튼 클릭됨!");
-              const input = document.createElement("input");
-              input.type = "file";
-              input.accept = ".xlsx";
-              input.onchange = handleFileUpload;
-              input.click();
+          const pickFile = async () => {
+            try {
+              if (Platform.OS === "web") {
+                // 🌐 웹 환경: input 요소를 사용
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".xlsx";
+                input.onchange = (event) => {
+                  const file = event.target.files[0];
+                  if (!file) {
+                    console.log("❌ 선택된 파일이 없습니다.");
+                    return;
+                  }
+                  console.log("📂 웹에서 선택한 파일:", file);
+                  handleFileUpload(file);
+                };
+                input.click();
+              } else {
+                // 📱 React Native 환경: expo-document-picker 사용
+                const result = await DocumentPicker.getDocumentAsync({
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  copyToCacheDirectory: true,
+                });
+          
+                if (result.canceled) {
+                  console.log("❌ 파일 선택 취소됨");
+                  return;
+                }
+          
+                console.log("📂 모바일에서 선택한 파일:", result);
+                handleFileUpload(result.uri);
+              }
+            } catch (error) {
+              console.error("❌ 파일 선택 중 오류 발생:", error);
+            }
           };
 
           document.body.appendChild(uploadButton);
@@ -278,31 +281,42 @@ const copyExcelToLocal = async () => {
 };
 
 // 📌 파일 업로드 처리 함수
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
+const [fileContent, setFileContent] = useState(null);
+const handleFileUpload = (file, magnetName, setMagnetData) => {
   if (!file) {
-      console.error("❌ 선택된 파일이 없습니다.");
-      return;
+    console.error("❌ 파일이 선택되지 않았습니다.");
+    return;
   }
 
+  if (!magnetName) {
+    console.error("❌ 선택된 Magnet이 없습니다. 데이터 로드를 중단합니다.");
+    return;
+  }
+
+  console.log("📂 파일 업로드 시작:", file.name);
+  console.log("🔎 현재 선택된 Magnet:", magnetName);
+
   const reader = new FileReader();
-  reader.readAsBinaryString(file);
-  reader.onload = () => {
-      console.log("📖 파일 읽기 완료!");
-      const workbook = XLSX.read(reader.result, { type: "binary" });
+  reader.onload = (e) => {
+    const binaryStr = e.target.result;
+    const workbook = XLSX.read(binaryStr, { type: "binary" });
 
-      // ✅ `selectedMagnet`이 올바르게 전달되도록 수정
-      if (!selectedMagnet) {
-          console.error("❌ 선택된 Magnet이 없습니다.");
-          return;
-      }
-
-      processExcelData(workbook, selectedMagnet, setMagnetData);
+    console.log("📊 엑셀 파일 로드 완료!", workbook);
+    if (setMagnetData) {
+      processExcelData(workbook, magnetName, setMagnetData);
+    } else {
+      console.error("❌ setMagnetData 함수가 정의되지 않았습니다!");
+    }
   };
+
   reader.onerror = (error) => {
-      console.error("❌ 파일 읽기 오류:", error);
+    console.error("❌ 파일 읽기 오류:", error);
   };
+
+  reader.readAsBinaryString(file);
 };
+
+
 
 // ✅ loadExcelData 함수에서 웹 환경에서는 `getInfoAsync()`를 실행하지 않도록 수정
 const loadExcelData = async (magnetName, setMagnetData) => {
@@ -328,7 +342,12 @@ const loadExcelData = async (magnetName, setMagnetData) => {
       console.warn("⚠️ 웹 환경에서는 `readAsStringAsync()` 실행 불가능. 파일을 직접 업로드해야 합니다.");
 
       const input = document.createElement("input");
-      input.type = "file";
+      <input
+        type="file"
+        id="fileInput"
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
+      />
       input.accept = ".xlsx";
       input.onchange = async (event) => {
           const file = event.target.files[0];
@@ -350,53 +369,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
       input.click();
       return;
   }
-  useEffect(() => {
-    if (Platform.OS === "web") {
-      console.log("🔄 useEffect 실행됨 - 웹 환경 감지");
-  
-      setTimeout(() => {
-        // 기존 버튼이 있으면 제거 후 새로 추가
-        let existingBtn = document.getElementById("uploadButton");
-        if (existingBtn) {
-          console.warn("⚠️ 기존 업로드 버튼이 존재합니다. 제거 후 새로 생성합니다.");
-          existingBtn.remove();
-        }
-  
-        console.log("📌 업로드 버튼 생성 중...");
-        const btn = document.createElement("button");
-        btn.id = "uploadButton";
-        btn.innerText = "📂 엑셀 파일 업로드";
-        btn.style.position = "fixed";
-        btn.style.top = "50px";
-        btn.style.left = "50px";
-        btn.style.zIndex = "9999";
-        btn.style.backgroundColor = "red";
-        btn.style.color = "white";
-        btn.style.padding = "10px";
-        btn.style.marginTop = "10px";
-        btn.style.display = "block";
-        btn.style.visibility = "visible";
-        btn.style.opacity = "1";
-  
-        btn.onclick = () => {
-          console.log("📂 업로드 버튼 클릭됨!");
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = ".xlsx";
-          input.onchange = handleFileUpload;
-          input.click();
-        };
-  
-        document.body.appendChild(btn);  // 🔥 `body`에 추가하여 항상 표시
-        console.log("✅ 업로드 버튼 추가 완료:", btn);
-      }, 1000);  // ✅ 1초 지연 후 추가
-    }
-  }, []);
-  
-  
-
-
-  
+    
   try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
           encoding: FileSystem.EncodingType.Base64,
@@ -435,11 +408,13 @@ const processExcelData = (workbook, magnetName, setMagnetData) => {
       Object.fromEntries(headers.map((h, i) => [h, row[i]]))
   );
 
-  const filteredData = rows.filter(row => row["magnet"].trim() === magnetName);
+  // ✅ undefined 값 방지 (row["magnet"]가 undefined면 빈 문자열 ""로 처리)
+  const filteredData = rows.filter(row => (row["magnet"] ?? "").trim() === magnetName);
   console.log("✅ 필터링된 데이터:", filteredData);
 
   setMagnetData(filteredData);
 };
+
 
 
 export default function App() {
@@ -458,8 +433,13 @@ export default function App() {
     Accessories: selectedAccessories,
     Utilities: selectedUtilities,
   });
-  
-
+  useEffect(() => {
+    if (selectedMagnet && fileContent) {
+      console.log("📢 Magnet 변경 감지! 데이터 다시 불러오기...");
+      loadExcelData(selectedMagnet, setMagnetData);
+    }
+  }, [selectedMagnet]); // 🔥 selectedMagnet 변경 감지하여 실행
+ 
   const toggleSelection = (item, selectedList, setSelectedList) => {
     if (selectedList.includes(item)) {
       setSelectedList(selectedList.filter(i => i !== item));
@@ -692,44 +672,75 @@ export default function App() {
       {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
         
       {screen === "final" && selectedMagnet && (
-        <View style={{ flex: 1, width: "100%" }}> 
-          <ScrollView 
-            style={{ flex: 1, width: "100%" }}
-            contentContainerStyle={{
-              flexGrow: 1,
-              alignItems: "center",
-              justifyContent: "flex-start",
-              paddingVertical: 20,
-            }}
-          >
-            <Text style={styles.title}>Final Data</Text>
+          <View style={{ flex: 1, width: "100%" }}>
+              <ScrollView 
+                  style={{ flex: 1, width: "100%" }}
+                  contentContainerStyle={{
+                      flexGrow: 1,
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                      paddingVertical: 20,
+                  }}
+              >
+                  <Text style={styles.title}>Final Data</Text>
 
-            {console.log("Final 화면의 magnetData: ", magnetData)}
+                  {console.log("Final 화면의 magnetData: ", magnetData)}
 
-            {magnetData.length > 0 ? (
-              <View style={[styles.table, { width: "80%", maxWidth: 500, maxheight: 600, alignSelf: "center"}]}>
-                {/* ✅ 내부 ScrollView에 flex 설정 및 nestedScrollEnabled 추가 */}
-                <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
-                  {Object.entries(magnetData[0]).map(([key, value], index) => (
-                    <View key={index} style={styles.row}>
-                      <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                      <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            ) : (
-              <Text>No Data Available</Text>
-            )}
+                  {magnetData.length > 0 ? (
+                      <View style={[styles.table, { width: "80%", maxWidth: 500, maxHeight: 600, alignSelf: "center"}]}>
+                          <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
+                              {Object.entries(magnetData[0]).map(([key, value], index) => (
+                                  <View key={index} style={styles.row}>
+                                      <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+                                      <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+                                  </View>
+                              ))}
+                          </ScrollView>
+                      </View>
+                  ) : (
+                      <Text>No Data Available</Text>
+                  )}
 
-            <TouchableOpacity style={styles.Sbutton} onPress={() => setScreen("home")}>
-              <Text style={styles.buttonText}>Restart</Text>
-            </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.Sbutton}
+                    onPress={() => {
+                      // 모든 선택 상태 초기화
+                      setSelectedMagnet(null);
+                      setSelectedConsole(null);
+                      setSelectedProbes([]);
+                      setSelectedAccessories([]);
+                      setSelectedUtilities([]);
+                      setMagnetData([]);  // 엑셀 데이터도 초기화
+                      setScreen("home");  // 홈 화면으로 이동
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Restart</Text>
+                  </TouchableOpacity>
 
-          </ScrollView>
-        </View>
+
+
+                  {/* ✅ 파일 불러오기 버튼 수정 */}
+                  <TouchableOpacity
+                    style={styles.Sbutton}
+                    onPress={() => {
+                      <TouchableOpacity onPress={pickFile} style={styles.Sbutton}>
+                        <Text style={styles.buttonText}>파일 불러오기</Text>
+                      </TouchableOpacity>
+                    
+                    }}
+                  >
+                    <Text style={styles.buttonText}>파일 불러오기</Text>
+                  </TouchableOpacity>
+
+
+                  {/* ✅ 숨겨진 파일 입력 필드 */}
+                  <TouchableOpacity onPress={pickFile} style={styles.Sbutton}>
+                    <Text style={styles.buttonText}>파일 불러오기</Text>
+                  </TouchableOpacity>
+
+              </ScrollView>
+          </View>
       )}
-
 
 
     </View>

@@ -20,7 +20,6 @@
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
-        
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/nmr.png",
@@ -62,6 +61,7 @@
         "projectId": "3a8db303-b445-445e-9dd5-ea2257ed0dc3"
       }
     },
-    "runtimeVersion": "1.0.0"
+    "runtimeVersion": "1.0.0",
+    "owner": "khyunsu"
   }
 }
