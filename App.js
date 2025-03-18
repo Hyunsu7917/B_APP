@@ -124,15 +124,13 @@ const downloadFile = async () => {
 
     const fileData = await response.blob();
 
+    // ✅ FileReader로 파일을 Base64로 변환 후 저장
     const reader = new FileReader();
-
     reader.onloadend = async () => {
       try {
         const base64Data = reader.result.split(",")[1];
 
-        // 파일 저장
         await FileSystem.writeAsStringAsync(FILE_PATH, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-
         console.log("✅ 파일 저장 완료! 최종 경로:", FILE_PATH);
 
         // ✅ 파일이 정상적으로 저장되었는지 다시 확인
@@ -149,15 +147,13 @@ const downloadFile = async () => {
     };
 
     reader.readAsDataURL(fileData);
-
-    return FILE_PATH;  // ✅ `downloadExcel()`에서 사용할 수 있도록 경로 반환
+    return FILE_PATH;  // ✅ `downloadExcel()`에서 사용할 수 있도록 반환
 
   } catch (error) {
     console.error("❌ 파일 다운로드 실패:", error);
     return null;
   }
 };
-
 
 // 📌 기존 downloadExcel 유지 (downloadFile 호출)
 const downloadExcel = async () => {
@@ -166,16 +162,32 @@ const downloadExcel = async () => {
 
     if (Platform.OS === "web") {
       console.warn("⚠️ 웹 환경에서는 다운로드 기능을 사용할 수 없습니다.");
-      return;  // 웹에서는 실행하지 않음
-  }
+      return;
+    }
   
-    await downloadFile();
+    const fileUri = await downloadFile();  // 🔥 파일 다운로드 실행
+    console.log("📂 다운로드된 파일 경로:", fileUri);
+
+    if (!fileUri) {
+      console.error("❌ 파일 다운로드 실패: fileUri가 없음");
+      return;
+    }
+
+    // ✅ `fileUri`가 존재하는 경우에만 `FileSystem.getInfoAsync()` 실행
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    console.log("📁 파일 정보 확인:", fileInfo);
+
+    if (!fileInfo.exists) {
+      throw new Error("❌ 다운로드한 파일이 존재하지 않습니다.");
+    }
+
     console.log("✅ [React Native] downloadExcel 실행 완료!");
     
   } catch (error) {
     console.error("❌ [React Native] downloadExcel 실패:", error);
   }
 };
+
 export const uploadExcel = async (file) => {
   const formData = new FormData();
   formData.append('file', {
