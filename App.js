@@ -59,24 +59,42 @@ const testDownload = async () => {
 };
 const checkForUpdates = async () => {
   try {
+    console.log("🔍 업데이트 확인 중...");
+
     const update = await Updates.checkForUpdateAsync();
+    console.log("📢 업데이트 가능 여부:", update.isAvailable);
+
     if (update.isAvailable) {
       Alert.alert(
         "업데이트 가능", 
         "새로운 버전이 있습니다. 업데이트하시겠습니까?",
         [
-          { text: "취소", style: "cancel" },
+          { text: "취소", style: "cancel", onPress: () => console.log("❌ 업데이트 취소됨") },
           { text: "업데이트", onPress: async () => {
-              await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync();
+              console.log("⬇️ 업데이트 다운로드 시작...");
+              try {
+                await Updates.fetchUpdateAsync();
+                console.log("✅ 업데이트 다운로드 완료!");
+
+                console.log("🔄 앱 재시작 중...");
+                await Updates.reloadAsync();
+              } catch (fetchError) {
+                console.error("❌ 업데이트 다운로드 중 오류 발생:", fetchError);
+              }
           }}
         ]
       );
+    } else {
+      console.log("🚀 최신 상태입니다! 업데이트 필요 없음.");
     }
   } catch (error) {
-    console.error("업데이트 확인 실패:", error);
+    console.error("❌ 업데이트 확인 실패:", error);
   }
 };
+
+useEffect(() => {
+  checkForUpdates();
+}, []);
 
 // 앱 실행 시 업데이트 확인
 useEffect(() => {
