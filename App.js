@@ -217,8 +217,7 @@ const downloadFile = async () => {
 
     reader.onload = () => {
       const binaryStr = reader.result;
-      const workbook = XLSX.read(binaryStr, { type: "binary" });
-      const sheetName = workbook.SheetNames[0];
+      const workbook = XLSX.read(binaryStr, { type: "binary" });      
       const sheet = workbook.Sheets[sheetName];
       const parsedData = XLSX.utils.sheet_to_json(sheet);
 
@@ -420,22 +419,49 @@ const copyExcelToLocal = async () => {
 
   return fileUri;
 };
+useEffect(() => {
+  if (screen === "final") {
+    console.log("🚀 useEffect 실행됨! (Final 화면)");
+
+    if (selectedMagnet) {
+      console.log("📌 선택된 Magnet:", selectedMagnet);
+      loadExcelData("Magnet", setMagnetData);
+    }
+
+    if (selectedConsole) {
+      console.log("📌 선택된 Console:", selectedConsole);
+      loadExcelData("Console", setConsoleData);
+    }
+
+    if (selectedAutoSampler) {
+      console.log("📌 선택된 AutoSampler:", selectedAutoSampler);
+      loadExcelData("AutoSampler", setAutoSamplerData);
+    }
+
+    if (selectedCPPCRP) {
+      console.log("📌 선택된 CPP&CRP:", selectedCPPCRP);
+      loadExcelData("CPP&CRP", setCppCrpData);
+    }
+  }
+}, [screen]);
+
 
 // 📌 파일 업로드 처리 함수
 const [fileContent, setFileContent] = useState(null);
-const handleFileUpload = (file, magnetName, setMagnetData) => {
+
+const handleFileUpload = (file, sheetName, setData) => {
   if (!file) {
     console.error("❌ 파일이 선택되지 않았습니다.");
     return;
   }
 
-  if (!magnetName) {
-    console.error("❌ 선택된 Magnet이 없습니다. 데이터 로드를 중단합니다.");
+  if (!sheetName) {
+    console.error("❌ 선택된 시트가 없습니다. 데이터 로드를 중단합니다.");
     return;
   }
 
   console.log("📂 파일 업로드 시작:", file.name);
-  console.log("🔎 현재 선택된 Magnet:", magnetName);
+  console.log(`🔎 현재 선택된 시트: ${sheetName}`);
 
   const reader = new FileReader();
 
@@ -445,24 +471,22 @@ const handleFileUpload = (file, magnetName, setMagnetData) => {
 
     const workbook = XLSX.read(binaryStr, { type: "binary" });
 
-    console.log("📖 엑셀 파일 로드 완료!", workbook);
+    console.log(`📖 엑셀 파일 (${sheetName}) 로드 완료!`, workbook);
 
-    if (typeof setMagnetData === "function") {
-      processExcelData(workbook, magnetName, setMagnetData);
+    if (typeof setData === "function") {
+      processExcelData(workbook, sheetName, setData);
     } else {
-      console.error("❌ setMagnetData가 정의되지 않았습니다! 해당 데이터를 업데이트할 수 없습니다.");
+      console.error(`❌ setData가 정의되지 않았습니다! (${sheetName} 데이터 업데이트 불가능)`);
     }
   };
 
-  reader.readAsDataURL(fileData);
-
+  reader.readAsBinaryString(file); // 🔥 `readAsDataURL` 대신 `readAsBinaryString` 사용
 };
 
 
-
 // ✅ loadExcelData 함수에서 웹 환경에서는 `getInfoAsync()`를 실행하지 않도록 수정
-const loadExcelData = async (magnetName, setMagnetData) => {
-  console.log("🔵 선택된 Magnet:", magnetName);
+const loadExcelData = async (sheetName, setData) => {
+  console.log(`🔵 선택된 시트: ${sheetName}`);
 
   let fileUri = await copyExcelToLocal();
   console.log("📂 읽어올 파일 경로:", fileUri);
@@ -484,13 +508,9 @@ const loadExcelData = async (magnetName, setMagnetData) => {
       console.warn("⚠️ 웹 환경에서는 `readAsStringAsync()` 실행 불가능. 파일을 직접 업로드해야 합니다.");
 
       const input = document.createElement("input");
-      <input
-        type="file"
-        id="fileInput"
-        style={{ display: "none" }}
-        onChange={handleFileUpload}
-      />
+      input.type = "file";
       input.accept = ".xlsx";
+      input.style.display = "none";
       input.onchange = async (event) => {
           const file = event.target.files[0];
           if (!file) {
@@ -503,7 +523,7 @@ const loadExcelData = async (magnetName, setMagnetData) => {
 
           reader.onload = () => {
               const workbook = XLSX.read(reader.result, { type: "binary" });
-              processExcelData(workbook, magnetName, setMagnetData);
+              processExcelData(workbook, sheetName, setData);
           };
           reader.onerror = (error) => {
               console.error("❌ 파일 읽기 오류:", error);
@@ -515,49 +535,47 @@ const loadExcelData = async (magnetName, setMagnetData) => {
     
   try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
-      console.log("📂 저장된 파일(Base64) 첫 100자:", fileContent.substring(0, 100));
-    
-      console.log("📖 엑셀 파일 읽기 성공!");
+      console.log(`📂 저장된 파일(Base64) 첫 100자 (${sheetName}):`, fileContent.substring(0, 100));
+
+      console.log(`📖 엑셀 파일 (${sheetName}) 읽기 성공!`);
 
       const workbook = XLSX.read(fileContent, { type: "base64" });
-      processExcelData(workbook, magnetName, setMagnetData);
+      processExcelData(workbook, sheetName, setData);
   } catch (error) {
-      console.error("❌ 엑셀 파일 로딩 중 오류:", error);
+      console.error(`❌ 엑셀 파일 로딩 중 오류 (${sheetName}):`, error);
   }
 };
 
 
+
 // 🟢 엑셀 데이터를 처리하는 함수 (웹/모바일 공통 사용)
-const processExcelData = (workbook, magnetName, setMagnetData) => {
-  const sheetName = "Magnet";
+const processExcelData = (workbook, sheetName, selectedName, setData) => {
   const sheet = workbook.Sheets[sheetName];
 
   if (!sheet) {
-      console.error(`❌ 시트 '${sheetName}'를 찾을 수 없습니다.`);
-      return;
+    console.error(`❌ 시트 '${sheetName}'를 찾을 수 없습니다.`);
+    return;
   }
 
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  console.log("📊 변환된 엑셀 데이터:", jsonData);
+  console.log(`📊 변환된 엑셀 데이터 (${sheetName}):`, jsonData);
 
   if (jsonData.length === 0) {
-      console.error("❌ 엑셀 데이터가 비어 있습니다.");
-      return;
+    console.error(`❌ 엑셀 데이터가 비어 있습니다. (${sheetName})`);
+    return;
   }
 
   const headers = jsonData[0];
   const rows = jsonData.slice(1).map(row =>
-      Object.fromEntries(headers.map((h, i) => [h, row[i]]))
+    Object.fromEntries(headers.map((h, i) => [h, row[i]]))
   );
 
-  // ✅ undefined 값 방지 (row["magnet"]가 undefined면 빈 문자열 ""로 처리)
-  const filteredData = rows.filter(row => (row["magnet"] ?? "").trim() === magnetName);
-  console.log("✅ 필터링된 데이터:", filteredData);
+  // ✅ undefined 값 방지 (row[sheetName]가 undefined면 빈 문자열 ""로 처리)
+  const filteredData = rows.filter(row => (row[sheetName] ?? "").trim() === selectedName);
+  console.log(`✅ 필터링된 데이터 (${sheetName}):`, filteredData);
 
-  setMagnetData(filteredData);
+  setData(filteredData);
 };
-
-
 
 export default function App() {
   const [screen, setScreen] = useState("home");
@@ -578,6 +596,7 @@ export default function App() {
     Utilities: selectedUtilities,
   });
   const [currentStep, setCurrentStep] = useState(0);
+  
 
   const stepScreens = [
     "magnet",
@@ -926,20 +945,25 @@ export default function App() {
                   </View>
 
                   {/* 🔥 magnetData 업데이트 감지 */}
-                  {console.log("📌 Final 화면의 magnetData: ", magnetData)}
+                  {console.log(`📌 Final 화면의 ${stepScreens[currentStep]} Data: `, summaryData[stepScreens[currentStep]])}
 
-                  {/* ✅ magnetData가 undefined일 경우 대비 */}
                   <View>
-                      {console.log("📌 Final 화면에서 magnetData 상태 확인:", JSON.stringify(magnetData, null, 2))}
-                      {magnetData.length > 0 && Object.entries(magnetData[0] || {}).map(([key, value], index) => (
-                          <View key={index} style={styles.row}>
-                              <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                              <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-                          </View>
-                      ))}
+                      {console.log(`📌 Final 화면에서 ${stepScreens[currentStep]} Data 상태 확인:`, JSON.stringify(summaryData[stepScreens[currentStep]], null, 2))}
+
+                      {/* ✅ 현재 step에 맞는 데이터 가져오기 */}
+                      {summaryData[stepScreens[currentStep]]?.length > 0 && 
+                          Object.entries(summaryData[stepScreens[currentStep]][0] || {}).map(([key, value], index) => (
+                              <View key={index} style={styles.row}>
+                                  <Text style={[styles.cellHeader, { flex: 2, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+                                  <Text style={[styles.cell, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+                              </View>
+                          ))
+                      }
+
                       {/* 데이터 없을 경우 메시지 */}
-                      {magnetData.length === 0 && <Text>No Data Available</Text>}
+                      {summaryData[stepScreens[currentStep]]?.length === 0 && <Text>No Data Available</Text>}
                   </View>
+
 
                   {/* 🔥 Restart 버튼 */}
                   <TouchableOpacity
