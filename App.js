@@ -422,29 +422,26 @@ const copyExcelToLocal = async () => {
 useEffect(() => {
   if (screen === "final") {
     console.log("🚀 useEffect 실행됨! (Final 화면)");
-
+    
+    // 선택된 항목이 있을 때만 loadExcelData 실행
     if (selectedMagnet) {
       console.log("📌 선택된 Magnet:", selectedMagnet);
-      loadExcelData("Magnet", setMagnetData);
+      loadExcelData("Magnet", selectedMagnet, setMagnetData);
     }
-
     if (selectedConsole) {
       console.log("📌 선택된 Console:", selectedConsole);
-      loadExcelData("Console", setConsoleData);
+      loadExcelData("Console", selectedConsole, setConsoleData);
     }
-
     if (selectedAutoSampler) {
       console.log("📌 선택된 AutoSampler:", selectedAutoSampler);
-      loadExcelData("AutoSampler", setAutoSamplerData);
+      loadExcelData("AutoSampler", selectedAutoSampler, setAutoSamplerData);
     }
-
-    if (selectedCPPCRP) {
-      console.log("📌 선택된 CPP&CRP:", selectedCPPCRP);
-      loadExcelData("CPP&CRP", setCppCrpData);
+    if (selectedCPPandCRP) {
+      console.log("📌 선택된 CPP&CRP:", selectedCPPandCRP);
+      loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
     }
   }
-}, [screen]);
-
+}, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]); // ✅ 의존성 배열 추가
 
 // 📌 파일 업로드 처리 함수
 const [fileContent, setFileContent] = useState(null);
@@ -485,8 +482,8 @@ const handleFileUpload = (file, sheetName, setData) => {
 
 
 // ✅ loadExcelData 함수에서 웹 환경에서는 `getInfoAsync()`를 실행하지 않도록 수정
-const loadExcelData = async (sheetName, setData) => {
-  console.log(`🔵 선택된 시트: ${sheetName}`);
+const loadExcelData = async (sheetName, selectedItem, setData) => {
+  console.log(`🔵 선택된 시트: ${sheetName}, 항목: ${selectedItem}`);
 
   let fileUri = await copyExcelToLocal();
   console.log("📂 읽어올 파일 경로:", fileUri);
@@ -537,10 +534,8 @@ const loadExcelData = async (sheetName, setData) => {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
       console.log(`📂 저장된 파일(Base64) 첫 100자 (${sheetName}):`, fileContent.substring(0, 100));
 
-      console.log(`📖 엑셀 파일 (${sheetName}) 읽기 성공!`);
-
       const workbook = XLSX.read(fileContent, { type: "base64" });
-      processExcelData(workbook, sheetName, setData);
+      processExcelData(workbook, sheetName, selectedItem, setData); // ✅ `selectedItem` 추가
   } catch (error) {
       console.error(`❌ 엑셀 파일 로딩 중 오류 (${sheetName}):`, error);
   }
@@ -549,7 +544,7 @@ const loadExcelData = async (sheetName, setData) => {
 
 
 // 🟢 엑셀 데이터를 처리하는 함수 (웹/모바일 공통 사용)
-const processExcelData = (workbook, sheetName, selectedName, setData) => {
+const processExcelData = (workbook, sheetName, selectedItem, setData) => {
   const sheet = workbook.Sheets[sheetName];
 
   if (!sheet) {
@@ -571,11 +566,12 @@ const processExcelData = (workbook, sheetName, selectedName, setData) => {
   );
 
   // ✅ undefined 값 방지 (row[sheetName]가 undefined면 빈 문자열 ""로 처리)
-  const filteredData = rows.filter(row => (row[sheetName] ?? "").trim() === selectedName);
+  const filteredData = rows.filter(row => (row[sheetName] ?? "").trim() === selectedItem);
   console.log(`✅ 필터링된 데이터 (${sheetName}):`, filteredData);
 
   setData(filteredData);
 };
+
 
 export default function App() {
   const [screen, setScreen] = useState("home");
@@ -595,6 +591,34 @@ export default function App() {
     CPPandCRP: selectedCPPandCRP,  
     Utilities: selectedUtilities,
   });
+  useEffect(() => {
+    setSummaryData((prevData) => ({
+      ...prevData,
+      Magnet: magnetData,
+    }));
+  }, [magnetData]);
+  
+  useEffect(() => {
+    setSummaryData((prevData) => ({
+      ...prevData,
+      Console: consoleData,
+    }));
+  }, [consoleData]);
+  
+  useEffect(() => {
+    setSummaryData((prevData) => ({
+      ...prevData,
+      AutoSampler: autoSamplerData,
+    }));
+  }, [autoSamplerData]);
+  
+  useEffect(() => {
+    setSummaryData((prevData) => ({
+      ...prevData,
+      CPPandCRP: cppcrpData,
+    }));
+  }, [cppcrpData]);
+  
   const [currentStep, setCurrentStep] = useState(0);
   
 
@@ -769,7 +793,7 @@ export default function App() {
     <View style={styles.container}>
     
       {/* 🏠 시작 화면 */}
-      {props.screen === "home" && (
+      {screen === "home" && (
         <View>
           <Text style={styles.title}>BBIOK App</Text>
             <TouchableOpacity
@@ -782,7 +806,7 @@ export default function App() {
       )}
 
       {/* 📌 사이트 플랜 화면 */}
-      {props.screen === "sitePlan" && (
+      {screen === "sitePlan" && (
         <View>
           <Text style={styles.title}>Site Plan</Text>
           <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
@@ -793,7 +817,7 @@ export default function App() {
       )}
 
       {/* 🔄 개별 항목 선택 화면 */}
-      {props.screen === "magnet" && (
+      {screen === "magnet" && (
         <View>
           <Text style={styles.title}>Magnet</Text>
           {["400core", "400evo", "500evo", "600evo", "700evo"].map(item => (
@@ -806,7 +830,7 @@ export default function App() {
         </View>
       )}
 
-      {props.screen === "console" && (
+      {screen === "console" && (
         <View>
           <Text style={styles.title}>Console</Text>
           {["Nanobay", "Onebay", "Twobay"].map(item => (
@@ -819,7 +843,7 @@ export default function App() {
         </View>
       )}
 
-      {props.screen === "probe" && (
+      {screen === "probe" && (
         <View>
           <Text style={styles.title}>Probe</Text>
           {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
@@ -832,7 +856,7 @@ export default function App() {
         </View>
       )}
 
-      {props.screen === "AutoSampler" && (
+      {screen === "AutoSampler" && (
         <View>
           <Text style={styles.title}>AutoSampler</Text>
           {["Sample Case 24","Sample Case Plus","Sample Case Heated & Cooled","Sample Jet", "BCU",].map(item => (
@@ -845,7 +869,7 @@ export default function App() {
         </View>
       )}
 
-      {props.screen === "CPPandCRP" && (
+      {screen === "CPPandCRP" && (
         <View>
           <Text style={styles.title}>CPPandCRP</Text>
           {["Prodigy","LN2dewar","CU","Outdoor", "indoor","Water Cooled"].map(item => (
@@ -858,7 +882,7 @@ export default function App() {
         </View>
       )}
 
-      {props.screen === "utilities" && (
+      {screen === "utilities" && (
         <View>
           <Text style={styles.title}>Utilities</Text>
           {["UPS", "Compressor", "Dryer"].map(item => (
@@ -872,7 +896,7 @@ export default function App() {
       )}
 
       {/* 🛠 Summary 화면 */}
-      {props.screen === "summary" && (
+      {screen === "summary" && (
         <View>
           <Text style={styles.title}>Summary</Text>
           <View style={styles.summaryTable}>
@@ -896,7 +920,7 @@ export default function App() {
 
       {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
         
-      {props.screen === "final" && selectedMagnet && (
+      {screen === "final" && selectedMagnet && (
           <View style={{ flex: 1, width: "100%" }}>
               <ScrollView 
                   style={{ flex: 1, width: "100%" }}
