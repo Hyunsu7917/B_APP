@@ -12,6 +12,14 @@ import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
 import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
+import { View, Text, ScrollView } from "react-native";
+import DynamicTable from "./components/DynamicTable";
+
+const DynamicTable = ({ title, data }) => {
+  if (!data || data.length === 0) {
+    return <Text>No Data Available</Text>;
+  }
+}
 
 const username = "BBIOK";
 const password = "Bruker_2025";
@@ -889,20 +897,18 @@ export default function App() {
               >
                   <Text style={styles.title}>Final Data</Text>
 
-                  {stepScreens[currentStep] === "magnet" && (
-                    <MagnetTable data={magnetData} />
+                  {/* 🔹 DynamicTable로 통합 */}
+                  {magnetData.length > 0 && stepScreens[currentStep] === "magnet" && (
+                    <DynamicTable title="Magnet Data" data={magnetData} />
                   )}
-
-                  {stepScreens[currentStep] === "console" && (
-                    <ConsoleTable data={consoleData} />
+                  {consoleData.length > 0 && stepScreens[currentStep] === "console" && (
+                    <DynamicTable title="Console Data" data={consoleData} />
                   )}
-
-                  {stepScreens[currentStep] === "AutoSampler" && (
-                    <AutoSamplerTable data={AutoSamplerData} />
+                  {autoSamplerData.length > 0 && stepScreens[currentStep] === "AutoSampler" && (
+                    <DynamicTable title="AutoSampler Data" data={autoSamplerData} />
                   )}
-
-                  {stepScreens[currentStep] === "cppandcrp" && (
-                    <CPPCRPTable data={cppcrpData} />
+                  {cppcrpData.length > 0 && stepScreens[currentStep] === "cppandcrp" && (
+                    <DynamicTable title="CPP and CRP Data" data={cppcrpData} />
                   )}
 
                   {/* 🔹 Next / Prev 버튼 추가 */}
