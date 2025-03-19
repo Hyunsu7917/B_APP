@@ -632,22 +632,7 @@ export default function App() {
         setScreen={setScreen}
         navigateTo={navigateTo}
         navigateBack={navigateBack}
-        selectedMagnet={selectedMagnet}
-        setSelectedMagnet={setSelectedMagnet}
-        selectedConsole={selectedConsole}
-        setSelectedConsole={setSelectedConsole}
-        selectedProbes={selectedProbes}
-        setSelectedProbes={setSelectedProbes}
-        selectedAutoSampler={selectedAutoSampler}
-        setSelectedAutoSampler={setSelectedAutoSampler}
-        selectedCPPandCRP={selectedCPPandCRP}
-        setSelectedCPPandCRP={setSelectedCPPandCRP}
-        selectedUtilities={selectedUtilities}
-        setSelectedUtilities={setSelectedUtilities}
-        magnetData={magnetData}
-        setMagnetData={setMagnetData}
-        summaryData={summaryData}
-        setSummaryData={setSummaryData}
+       
       />
     </View>
   );
