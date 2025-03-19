@@ -576,49 +576,28 @@ const processExcelData = (workbook, sheetName, selectedItem, setData) => {
   setData(filteredData);
 };
 
+import React, { useState, useEffect } from "react";
+import { View, Text } from "react-native";
+import MainNavigator from "./MainNavigator";  // ✅ MainNavigator 가져오기
+import styles from "./styles";
+
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [prevScreens, setPrevScreens] = useState([]);
-  const [selectedMagnet, setSelectedMagnet] = useState(null);
-  const [selectedConsole, setSelectedConsole] = useState(null);
-  const [selectedProbes, setSelectedProbes] = useState([]);
-  const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
-  const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
-  const [selectedUtilities, setSelectedUtilities] = useState([]);
-  const [magnetData, setMagnetData] = useState([]);
-  const [summaryData, setSummaryData] = useState({
-    Magnet: selectedMagnet,
-    Console: selectedConsole,
-    Probes: selectedProbes,
-    AutoSampler: selectedAutoSampler,
-    CPPandCRP: selectedCPPandCRP,
-    Utilities: selectedUtilities,
-  });
 
-  console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
-  
+  console.log("🔥 App.js에서 초기 screen 값:", screen); // ✅ 상태 확인 로그
 
-  useEffect(() => {
-    if (screen === undefined || screen === null) {
-      console.error("❌ screen 값이 undefined 또는 null입니다!");
-    } else {
-      console.log("✅ 정상적인 screen 값:", screen);
-    }
-  }, [screen]);
-
-  // ✅ navigateTo 함수 추가
+  // ✅ navigateTo 함수
   const navigateTo = (nextScreen) => {
-    console.log("📌 현재 화면(screen):", screen);
-    console.log("🔄 저장되는 prevScreens 값:", [...prevScreens, screen]);
-
-    setPrevScreens([...prevScreens, screen]); // 🔹 현재 화면을 이전 화면 목록에 추가
+    console.log("📌 이동할 화면:", nextScreen);
+    setPrevScreens([...prevScreens, screen]); 
     setScreen(nextScreen);
   };
 
-  // ✅ navigateBack 함수 추가
+  // ✅ navigateBack 함수
   const navigateBack = () => {
     if (prevScreens.length > 0) {
-      const lastScreen = prevScreens.pop(); // 🔹 마지막으로 저장된 화면 가져오기
+      const lastScreen = prevScreens.pop();
       console.log("🔙 이전 화면으로 이동:", lastScreen);
       setScreen(lastScreen);
     }
@@ -626,17 +605,16 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-    {console.log("✅ MainNavigator가 렌더링됨")}
-      <MainNavigator
-        screen={screen}
-        setScreen={setScreen}
-        navigateTo={navigateTo}
-        navigateBack={navigateBack}
-       
+      <MainNavigator 
+        screen={screen} 
+        setScreen={setScreen} 
+        navigateTo={navigateTo} 
+        navigateBack={navigateBack} 
       />
     </View>
   );
 }
+
 
 
 
