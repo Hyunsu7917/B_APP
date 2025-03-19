@@ -594,14 +594,6 @@ export default function App() {
     CPPandCRP: selectedCPPandCRP,
     Utilities: selectedUtilities,
   });
-  useEffect(() => {
-    if (screen === undefined) {
-      console.error("❌ screen 값이 undefined입니다!");
-      throw new Error("screen 값이 undefined입니다!"); // 강제 에러 발생
-    } else {
-      console.log("✅ 정상적인 screen 값:", screen);
-    }
-  }, [screen]);
 
   console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
   
@@ -634,6 +626,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+    {console.log("✅ MainNavigator가 렌더링됨")}
       <MainNavigator
         screen={screen}
         setScreen={setScreen}
