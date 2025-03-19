@@ -12,7 +12,6 @@ import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
 import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
-import DynamicTable from "./components/DynamicTable";
 import MainNavigator from "./MainNavigator";
 import styles from "./styles";
 
@@ -576,28 +575,49 @@ const processExcelData = (workbook, sheetName, selectedItem, setData) => {
   setData(filteredData);
 };
 
-import React, { useState, useEffect } from "react";
-import { View, Text } from "react-native";
-import MainNavigator from "./MainNavigator";  // ✅ MainNavigator 가져오기
-import styles from "./styles";
-
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [prevScreens, setPrevScreens] = useState([]);
+  const [selectedMagnet, setSelectedMagnet] = useState(null);
+  const [selectedConsole, setSelectedConsole] = useState(null);
+  const [selectedProbes, setSelectedProbes] = useState([]);
+  const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
+  const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
+  const [selectedUtilities, setSelectedUtilities] = useState([]);
+  const [magnetData, setMagnetData] = useState([]);
+  const [summaryData, setSummaryData] = useState({
+    Magnet: selectedMagnet,
+    Console: selectedConsole,
+    Probes: selectedProbes,
+    AutoSampler: selectedAutoSampler,
+    CPPandCRP: selectedCPPandCRP,
+    Utilities: selectedUtilities,
+  });
 
-  console.log("🔥 App.js에서 초기 screen 값:", screen); // ✅ 상태 확인 로그
+  console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
+  
 
-  // ✅ navigateTo 함수
+  useEffect(() => {
+    if (screen === undefined || screen === null) {
+      console.error("❌ screen 값이 undefined 또는 null입니다!");
+    } else {
+      console.log("✅ 정상적인 screen 값:", screen);
+    }
+  }, [screen]);
+
+  // ✅ navigateTo 함수 추가
   const navigateTo = (nextScreen) => {
-    console.log("📌 이동할 화면:", nextScreen);
-    setPrevScreens([...prevScreens, screen]); 
+    console.log("📌 현재 화면(screen):", screen);
+    console.log("🔄 저장되는 prevScreens 값:", [...prevScreens, screen]);
+
+    setPrevScreens([...prevScreens, screen]); // 🔹 현재 화면을 이전 화면 목록에 추가
     setScreen(nextScreen);
   };
 
-  // ✅ navigateBack 함수
+  // ✅ navigateBack 함수 추가
   const navigateBack = () => {
     if (prevScreens.length > 0) {
-      const lastScreen = prevScreens.pop();
+      const lastScreen = prevScreens.pop(); // 🔹 마지막으로 저장된 화면 가져오기
       console.log("🔙 이전 화면으로 이동:", lastScreen);
       setScreen(lastScreen);
     }
@@ -605,18 +625,31 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <MainNavigator 
-        screen={screen} 
-        setScreen={setScreen} 
-        navigateTo={navigateTo} 
-        navigateBack={navigateBack} 
+      <MainNavigator
+        screen={screen}
+        setScreen={setScreen}
+        navigateTo={navigateTo}
+        navigateBack={navigateBack}
+        selectedMagnet={selectedMagnet}
+        setSelectedMagnet={setSelectedMagnet}
+        selectedConsole={selectedConsole}
+        setSelectedConsole={setSelectedConsole}
+        selectedProbes={selectedProbes}
+        setSelectedProbes={setSelectedProbes}
+        selectedAutoSampler={selectedAutoSampler}
+        setSelectedAutoSampler={setSelectedAutoSampler}
+        selectedCPPandCRP={selectedCPPandCRP}
+        setSelectedCPPandCRP={setSelectedCPPandCRP}
+        selectedUtilities={selectedUtilities}
+        setSelectedUtilities={setSelectedUtilities}
+        magnetData={magnetData}
+        setMagnetData={setMagnetData}
+        summaryData={summaryData}
+        setSummaryData={setSummaryData}
       />
     </View>
   );
 }
-
-
-
 
   console.log("🔥 초기 screen 값:", screen);  // ✅ 앱 실행 전에 screen 상태 확인
   useEffect(() => {
@@ -824,13 +857,6 @@ export default function App() {
       console.error("❌ 파일 업로드 실패:", error);
     }
   
-  const MainNavigator = ({ screen, setScreen }) => {
-    return (
-      <View style={styles.container}>
-        <MainNavigator screen={screen} setScreen={setScreen} />
-      </View>
-    );
-    
-  }
+  
 
 }
