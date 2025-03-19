@@ -560,7 +560,6 @@ export default function App() {
     </View>
   );
 }
-
 useEffect(() => {
   if (!screen) {
     console.warn("⚠️ screen 값이 정의되지 않음!");
