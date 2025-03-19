@@ -108,16 +108,22 @@ const checkForUpdates = async () => {
   }
 };
 
-// 앱 실행 시 업데이트 확인
+// ✅ `useEffect` 내부에서 `async` 함수를 정의하고 실행하는 방식으로 수정
 useEffect(() => {
-  checkForUpdates();
+  const fetchUpdates = async () => {
+    await checkForUpdates();
+  };
+
+  fetchUpdates();
 }, []);
+
 
 
 // ✅ ArrayBuffer → Base64 변환 함수
 const arrayBufferToBase64 = (buffer) => {
   return Buffer.from(new Uint8Array(buffer)).toString('base64');
 };
+
 const checkForFileUpdate = async () => {
   let fileUri = FileSystem.documentDirectory + "site.xlsx";
 
@@ -153,15 +159,27 @@ const checkForFileUpdate = async () => {
 
     // 🔥 서버 파일이 더 최신이면 다운로드 실행!
     console.log("📥 새로운 파일 다운로드 중...");
-    await downloadFile();
+
+    if (typeof downloadFile === "function") {
+      await downloadFile(); // ✅ downloadFile()이 정의되어 있는지 확인 후 실행
+    } else {
+      console.error("❌ downloadFile 함수가 정의되지 않았습니다!");
+    }
 
   } catch (error) {
     console.error("❌ 파일 업데이트 확인 중 오류 발생:", error);
   }
 };
+
+// ✅ useEffect 내에서 async 함수 호출 방식 수정
 useEffect(() => {
-  checkForFileUpdate();  // 앱 시작 시 파일 업데이트 여부 확인
+  const fetchFileUpdate = async () => {
+    await checkForFileUpdate();
+  };
+
+  fetchFileUpdate();
 }, []);
+
 
 const downloadFile = async () => {
   console.log("🚀✅ downloadFile() 함수 실행됨!");
@@ -273,17 +291,39 @@ useEffect(() => {
 // 📌 기존 downloadExcel 유지 (downloadFile 호출)
 const downloadExcel = async () => {
   try {
-    console.log("⚡ [React Native] downloadExcel 함수 실행됨!");
+    console.log("⚡ downloadExcel 함수 실행됨!");
 
     if (Platform.OS === "web") {
-      console.warn("⚠️ 웹 환경에서는 다운로드 기능을 사용할 수 없습니다.");
+      console.log("🌍 웹 환경에서 Excel 파일 다운로드 시작!");
+
+      console.log("📂 fetch() 실행 전: 서버에서 파일 요청을 보냅니다.");
+      const response = await fetch(FILE_URL, {
+        method: "GET",
+        headers: {
+          "Authorization": `Basic ${encodedAuth}`,
+          "Accept": "*/*"
+        }
+      });
+
+      console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "site.xlsx";  // 📌 다운로드 파일명 지정
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      console.log("✅ 웹 환경에서 Excel 파일 다운로드 성공!");
       return;
     }
 
-    console.log("📂 ✅ downloadFile() 함수가 실행되었습니다!");  
+    // 📱 React Native 환경 (파일 시스템을 활용한 다운로드)
+    console.log("📂 ✅ downloadFile() 함수 실행 중...");
     const fileUri = await downloadFile();
-    console.log("📂 ✅ downloadFile() 함수 실행 완료! 결과:", fileUri);
-
+    console.log("📂 ✅ downloadFile() 완료! 결과:", fileUri);
 
     if (!fileUri) {
       console.error("❌ 파일 다운로드 실패: fileUri가 없음");
@@ -295,11 +335,10 @@ const downloadExcel = async () => {
 
     // 🔥 저장된 Base64 데이터 확인
     const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
-    console.log("📂 저장된 Base64 데이터 (첫 100자):", base64.substring(0, 100));
+    console.log("📂 저장된 Base64 데이터 (앞 100자):", base64.substring(0, 100));
 
     const fileInfo = await FileSystem.getInfoAsync(fileUri);
     console.log("📂 저장된 파일 정보:", fileInfo);
-
 
     if (!fileInfo.exists) {
       throw new Error("❌ 다운로드한 파일이 존재하지 않습니다.");
@@ -307,9 +346,10 @@ const downloadExcel = async () => {
 
     console.log("✅ [React Native] downloadExcel 실행 완료!");
   } catch (error) {
-    console.error("❌ [React Native] downloadExcel 실패:", error);
+    console.error("❌ downloadExcel 실패:", error);
   }
 };
+
 
 export const uploadExcel = async (file) => {
   const formData = new FormData();
@@ -606,9 +646,9 @@ export default function App() {
   const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
   const [selectedUtilities, setSelectedUtilities] = useState([]);
   const [magnetData, setMagnetData] = useState([]);
-  const [ConsoleData, setConsoleData] = useState([]);
-  const [AutoSamplerData, setAutoSamplerData] = useState([]);
-  const [CPPandCRPData, setCPPandCRPData] = useState([]);
+  const [consoleData, setConsoleData] = useState([]);
+  const [autosamplerData, setAutoSamplerData] = useState([]);
+  const [cppandcrpData, setCPPandCRPData] = useState([]);
   const [summaryData, setSummaryData] = useState({
     Magnet: selectedMagnet,
     Console: selectedConsole,
@@ -670,12 +710,12 @@ export default function App() {
         setSelectedUtilities={setSelectedUtilities}
         magnetData={magnetData}
         setMagnetData={setMagnetData}
-        ConsoleData={ConsoleData}
-        setConsoleData={setConsoleData}
-        AutoSamplerData={AutoSamplerData}
-        setAutoSamplerData={setAutoSamplerData}
-        CPPandCRPData={CPPandCRPData}
-        setCPPandCRPData={setCPPandCRPData}
+        consoleData={consoleData}
+        setconsoleData={setConsoleData}
+        autosamplerData={autosamplerData}
+        setautosamplerData={setAutoSamplerData}
+        cppandcrpData={cppandcrpData}
+        setcppandcrpData={setCPPandCRPData}
         summaryData={summaryData}
         setSummaryData={setSummaryData}
       />
@@ -773,44 +813,7 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    console.log("🟢 useEffect 실행됨: downloadExcel() 호출");
-
-    const downloadExcel = async () => {
-        try {
-            console.log("🟢 Excel 파일 다운로드 시작");
-
-            console.log("🚀 fetch() 실행 전: 서버에서 파일 요청을 보냅니다.");
-            const response = await fetch(FILE_URL, {
-              method: "GET",
-              headers: {
-                "Authorization": `Basic ${encodedAuth}`,
-                "Accept": "*/*"
-              }
-            });
-            console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");        
-                    
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "site.xlsx"; // 파일명 설정
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            console.log("✅ Excel 파일 다운로드 성공!");
-        } catch (error) {
-            console.error("❌ Excel 파일 다운로드 실패:", error);
-        }
-    };
-
-    downloadExcel(); // ✅ 여기서 downloadExcel 실행
-
-  }, []);
-
-
+  
   const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
   useEffect(() => {
     if (screen === "final") {
