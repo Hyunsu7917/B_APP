@@ -687,8 +687,8 @@ export default function App() {
       setPrevScreens(prevScreens.slice(0, -1)); // 마지막 항목 제거
     }
   };
-  
 
+  console.log("🔍 App.js에서 selectedMagnet 값:", selectedMagnet);
   return (
     <View style={styles.container}>
       <MainNavigator
@@ -778,7 +778,13 @@ export default function App() {
     console.log("📂 Final 화면의 magnetData: ", magnetData);
   }, [magnetData]);  // ✅ magnetData가 변경될 때마다 로그 출력
 
-
+  useEffect(() => {
+    if (selectedMagnet && fileContent) {
+      console.log("📢 Magnet 변경 감지! 데이터 다시 불러오기...");
+      loadExcelData(selectedMagnet, setMagnetData);
+    }
+  }, [selectedMagnet]); // 🔥 selectedMagnet 변경 감지하여 실행
+ 
   const toggleSelection = (item, selectedList, setSelectedList) => {
     if (selectedList.includes(item)) {
       setSelectedList(selectedList.filter(i => i !== item));
