@@ -688,7 +688,15 @@ export default function App() {
     }
   };
 
-  console.log("🔍 App.js에서 selectedMagnet 값:", selectedMagnet);
+  console.log("🚀 App.js에서 MainNavigator로 보내는 props:", {
+    screen,
+    setScreen,
+    navigateTo,
+    navigateBack,
+    selectedMagnet,
+    setSelectedMagnet
+  });
+  
   return (
     <View style={styles.container}>
       <MainNavigator
