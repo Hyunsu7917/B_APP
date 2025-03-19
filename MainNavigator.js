@@ -3,10 +3,8 @@ import { View, Text, TouchableOpacity } from "react-native";
 import styles from "./styles"; // ✅ 스타일 파일 불러오기
 
 // ✅ props를 올바르게 받아서 처리
-const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
-  // 🔥 props가 정상적으로 전달되었는지 확인
-  console.log("📌 MainNavigator가 받은 props:", { screen, setScreen, navigateTo, navigateBack });
-
+const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMagnet, setSelectedMagnet }) => {
+  console.log("📌 MainNavigator가 받은 props:", { screen, setScreen, navigateTo, navigateBack, selectedMagnet });
 
   if (!screen) {
     console.error("❌ screen 값이 undefined입니다!");
@@ -177,7 +175,7 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
         )}
         {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
           
-        {screen === "final" && (
+        {screen === "final" && selectedMagnet && (
             <View style={{ flex: 1, width: "100%" }}>
                 <ScrollView 
                     style={{ flex: 1, width: "100%" }}
