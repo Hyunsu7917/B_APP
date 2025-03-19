@@ -22,93 +22,131 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
 
       {/* 📌 사이트 플랜 화면 */}
       {screen === "sitePlan" && (
-          <View>
-            <Text style={styles.title}>Site Plan</Text>
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("magnet")}>
-              <Text style={styles.buttonText}>자석</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <View>
+          <Text style={styles.title}>Site Plan</Text>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("home")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("magnet")}>
+            <Text style={styles.buttonText}>자석</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 🔄 개별 항목 선택 화면 */}
       {screen === "magnet" && (
-          <View>
-            <Text style={styles.title}>Magnet</Text>
-            {["400core", "400evo", "500evo", "600evo", "700evo"].map(item => (
-              <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setSelectedMagnet(item)}>
-                <Text style={[styles.menuText, selectedMagnet === item ? styles.selected : null]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("console")} disabled={!selectedMagnet}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
-          </View>
-        )}
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["400core", "400evo", "500evo", "600evo", "700evo"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("console")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("sitePlan")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("console")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {screen === "console" && (
         <View>
-        <Text style={styles.title}>Console</Text>
-        {["Nanobay", "Onebay", "Twobay"].map(item => (
-            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setSelectedConsole(item)}>
-                <Text style={[styles.menuText, selectedConsole === item ? styles.selected : null]}>{item}</Text>
+          <Text style={styles.title}>Magnet</Text>
+          {["Nanobay", "Onebay", "Twobay"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("probe")}>
+              <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
-        ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("probe")} disabled={!selectedConsole}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("magnet")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("probe")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
         </View>
-        )}
-        {screen === "probe" && (
-          <View>
-            <Text style={styles.title}>Probe</Text>
-            {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
-              <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedProbes, setSelectedProbes)}>
-                <Text style={[styles.menuText, selectedProbes.includes(item) ? styles.selected : null]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("AutoSampler")} disabled={selectedProbes.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
-          </View>
-        )}
-
-        {screen === "AutoSampler" && (
-          <View>
-            <Text style={styles.title}>AutoSampler</Text>
-            {["Sample Case 24","Sample Case Plus","Sample Case Heated & Cooled","Sample Jet", "BCU",].map(item => (
-              <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedAutoSampler, setSelectedAutoSampler)}>
-                <Text style={[styles.menuText, selectedAutoSampler.includes(item) ? styles.selected : null]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("CPPandCRP")} disabled={selectedAutoSampler.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
-          </View>
-        )}
-
-        {screen === "CPPandCRP" && (
-          <View>
-            <Text style={styles.title}>CPPandCRP</Text>
-            {["Prodigy","LN2dewar","CU","Outdoor", "indoor","Water Cooled"].map(item => (
-              <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedCPPandCRP, setSelectedCPPandCRP)}>
-                <Text style={[styles.menuText, selectedCPPandCRP.includes(item) ? styles.selected : null]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("utilities")} disabled={selectedCPPandCRP.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
-          </View>
-        )}
-
-        {screen === "utilities" && (
-          <View>
-            <Text style={styles.title}>Utilities</Text>
-            {["UPS", "Compressor", "Dryer"].map(item => (
-              <TouchableOpacity key={item} style={styles.menuItem} onPress={() => toggleSelection(item, selectedUtilities, setSelectedUtilities)}>
-                <Text style={[styles.menuText, selectedUtilities.includes(item) ? styles.selected : null]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("summary")} disabled={selectedUtilities.length === 0}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
-          </View>
-        )}
-
-        {/* 🛠 Summary 화면 */}
+      )}
+      {screen === "probe" && (
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("AutoSampler")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("console")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("AutoSampler")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {screen === "AutoSampler" && (
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("CPPandCRP")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("probe")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("CPPandCRP")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {screen === "CPPandCRP" && (
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("utilities")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("AutoSampler")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("utilities")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {screen === "utilities" && (
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("summary")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("ACPPandCRP")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("summary")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {screen === "utilities" && (
+        <View>
+          <Text style={styles.title}>Magnet</Text>
+          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("summary")}>
+              <Text style={styles.menuText}>{item}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("ACPPandCRP")}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setScreen("summary")}>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+            {/* 🛠 Summary 화면 */}
         {screen === "summary" && (
           <View>
             <Text style={styles.title}>Summary</Text>
@@ -120,17 +158,15 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
               </View>
               ))}
             </View>
-            <TouchableOpacity style={styles.button} onPress={navigateBack}>
+            <TouchableOpacity style={styles.button} onPress={() => setScreen("utilities")}>
               <Text style={styles.buttonText}>Back</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigateTo("final")}>
+            <TouchableOpacity style={styles.button} onPress={() => setScreen("final")}>
               <Text style={styles.buttonText}>Next</Text>
             </TouchableOpacity>
         
           </View>
         )}
-
-
         {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
           
         {screen === "final" && selectedMagnet && (
