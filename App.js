@@ -466,33 +466,6 @@ const copyExcelToLocal = async () => {
 
   return fileUri;
 };
-useEffect(() => {
-  if (!screen) {
-    console.warn("⚠️ screen 값이 정의되지 않음!");
-    return;
-  }
-
-  if (screen === "final") {
-    console.log("🔄 useEffect 실행됨! (Final 화면)");
-
-    if (selectedMagnet?.length > 0) {
-      console.log("📌 선택된 Magnet:", selectedMagnet);
-      loadExcelData("Magnet", selectedMagnet, setMagnetData);
-    }
-    if (selectedConsole?.length > 0) {
-      console.log("📌 선택된 Console:", selectedConsole);
-      loadExcelData("Console", selectedConsole, setConsoleData);
-    }
-    if (selectedAutoSampler?.length > 0) {
-      console.log("📌 선택된 AutoSampler:", selectedAutoSampler);
-      loadExcelData("AutoSampler", selectedAutoSampler, setAutoSamplerData);
-    }
-    if (selectedCPPandCRP?.length > 0) {
-      console.log("📌 선택된 CPPandCRP:", selectedCPPandCRP);
-      loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
-    }
-  }
-}, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]);
 
 
 // 📌 파일 업로드 처리 함수
@@ -641,7 +614,6 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [prevScreens, setPrevScreens] = useState([]);
   const [selectedMagnet, setSelectedMagnet] = useState(null);
-  console.log("🔍 selectedMagnet 초기 상태:", selectedMagnet);  
   const [selectedConsole, setSelectedConsole] = useState(null);
   const [selectedProbes, setSelectedProbes] = useState([]);
   const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
@@ -864,17 +836,6 @@ export default function App() {
     }
   }, [screen, currentStep]);  // ✅ `currentStep` 변경 시 실행
   
-
-  useEffect(() => {
-    setSummaryData({
-      Magnet: selectedMagnet,
-      Console: selectedConsole,
-      Probes: selectedProbes.join(", "), // 배열을 문자열로 변환
-      AutoSampler: selectedAutoSampler.join(", "),
-      CPPandCRP: selectedCPPandCRP.join(", "),
-      Utilities: selectedUtilities.join(", "),
-    });
-  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAutoSampler, selectedCPPandCRP, selectedUtilities]);
   
   const API_URL = "http://192.168.1.13:5000/assets/site.xlsx";
 
