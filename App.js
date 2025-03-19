@@ -640,6 +640,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [prevScreens, setPrevScreens] = useState([]);
   const [selectedMagnet, setSelectedMagnet] = useState(null);
+  console.log("🔍 selectedMagnet 초기 상태:", selectedMagnet);  
   const [selectedConsole, setSelectedConsole] = useState(null);
   const [selectedProbes, setSelectedProbes] = useState([]);
   const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
