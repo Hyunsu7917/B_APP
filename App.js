@@ -102,10 +102,6 @@ const checkForUpdates = async () => {
   }
 };
 
-useEffect(() => {
-  checkForUpdates();
-}, []);
-
 // 앱 실행 시 업데이트 확인
 useEffect(() => {
   checkForUpdates();
@@ -695,7 +691,7 @@ export default function App() {
     }));
   }, [cppcrpData]);
   
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState();
   
 
   const stepScreens = [
@@ -763,10 +759,8 @@ export default function App() {
                 "Accept": "*/*"
               }
             });
-            console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
-
-            
-                     
+            console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");        
+                    
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
