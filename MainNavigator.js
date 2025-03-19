@@ -3,19 +3,10 @@ import { View, Text, TouchableOpacity } from "react-native";
 import styles from "./styles"; // ✅ 스타일 파일 불러오기
 
 // ✅ props를 올바르게 받아서 처리
-const MainNavigator = ({ screen, setscreen, navigateTo, navigateBack }) => {
+const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
   // 🔥 props가 정상적으로 전달되었는지 확인
-  console.log("📌 MainNavigator가 받은 props:", { screen, setscreen, navigateTo, navigateBack });
+  console.log("📌 MainNavigator가 받은 props:", { screen, setScreen, navigateTo, navigateBack });
 
-const navigateBack = () => {
-  setPrevScreens((prev) => {
-    if (prev.length === 0) return prev; // 🔥 이전 화면이 없으면 그대로 유지
-    const lastScreen = prev[prev.length - 1]; // 🔥 pop() 대신 배열에서 가져옴
-    console.log("🔙 이전 화면으로 이동:", lastScreen);
-    setScreen(lastScreen);
-    return prev.slice(0, -1); // 🔥 pop() 대신 slice()로 새로운 배열 생성
-  });
-};
 
   if (!screen) {
     console.error("❌ screen 값이 undefined입니다!");
