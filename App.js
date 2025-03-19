@@ -448,9 +448,7 @@ useEffect(() => {
 
 
 // 📌 파일 업로드 처리 함수
-const [fileContent, setFileContent] = useState(null);
-
-const handleFileUpload = (file, sheetName, setData) => {
+const handleFileUpload = (file, sheetName, setData = () => {}) => {  // 기본값 설정
   if (!file) {
     console.error("❌ 파일이 선택되지 않았습니다.");
     return;
@@ -468,7 +466,7 @@ const handleFileUpload = (file, sheetName, setData) => {
 
   reader.onload = (e) => {
     const binaryStr = e.target.result;
-    console.log("📂 변환된 Base64 데이터 (앞부분 100자):", binaryStr.substring(0, 100)); // 일부만 출력
+    console.log("📂 변환된 Base64 데이터 (앞부분 100자):", binaryStr.substring(0, 100));
 
     const workbook = XLSX.read(binaryStr, { type: "binary" });
 
@@ -481,12 +479,12 @@ const handleFileUpload = (file, sheetName, setData) => {
     }
   };
 
-  reader.readAsArrayBuffer(file); // 🔥 `readAsDataURL` 대신 `readAsBinaryString` 사용
+  reader.readAsArrayBuffer(file);
 };
 
 
 // ✅ loadExcelData 함수에서 웹 환경에서는 `getInfoAsync()`를 실행하지 않도록 수정
-const loadExcelData = async (sheetName, selectedItem, setData) => {
+const loadExcelData = async (sheetName, selectedItem, setData = () => {}) => {  // ✅ 기본값 추가
   console.log(`🔵 선택된 시트: ${sheetName}, 항목: ${selectedItem}`);
 
   let fileUri = await copyExcelToLocal();
@@ -520,7 +518,7 @@ const loadExcelData = async (sheetName, selectedItem, setData) => {
           }
 
           const reader = new FileReader();
-          reader.readAsArrayBuffer(file); // 🔥 기존 readAsBinaryString() 대신 사용
+          reader.readAsArrayBuffer(file);
 
           reader.onload = () => {
               const workbook = XLSX.read(reader.result, { type: "binary" });
@@ -536,19 +534,30 @@ const loadExcelData = async (sheetName, selectedItem, setData) => {
     
   try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+
+      if (!fileContent) {
+          console.error(`❌ 파일을 읽어오지 못함: ${fileUri}`);
+          return;
+      }
+
       console.log(`📂 저장된 파일(Base64) 첫 100자 (${sheetName}):`, fileContent.substring(0, 100));
 
       const workbook = XLSX.read(fileContent, { type: "base64" });
-      processExcelData(workbook, sheetName, selectedItem, setData); // ✅ `selectedItem` 추가
+
+      if (typeof processExcelData === "function") {
+          processExcelData(workbook, sheetName, selectedItem, setData); 
+      } else {
+          console.error("❌ processExcelData가 정의되지 않았습니다.");
+      }
+
   } catch (error) {
       console.error(`❌ 엑셀 파일 로딩 중 오류 (${sheetName}):`, error);
   }
 };
 
 
-
 // 🟢 엑셀 데이터를 처리하는 함수 (웹/모바일 공통 사용)
-const processExcelData = (workbook, sheetName, selectedItem, setData) => {
+const processExcelData = (workbook, sheetName, selectedItem, setData = () => {}) => {  // ✅ 기본값 추가
   const sheet = workbook.Sheets[sheetName];
 
   if (!sheet) {
@@ -569,9 +578,13 @@ const processExcelData = (workbook, sheetName, selectedItem, setData) => {
     Object.fromEntries(headers.map((h, i) => [h, row[i]]))
   );
 
-  // ✅ undefined 값 방지 (row[sheetName]가 undefined면 빈 문자열 ""로 처리)
   const filteredData = rows.filter(row => (row[sheetName] ?? "").trim() === selectedItem);
   console.log(`✅ 필터링된 데이터 (${sheetName}):`, filteredData);
+
+  if (!filteredData || filteredData.length === 0) {
+    console.warn(`⚠️ 필터링된 데이터가 없습니다. (${sheetName})`);
+    return;
+  }
 
   setData(filteredData);
 };
@@ -586,6 +599,9 @@ export default function App() {
   const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
   const [selectedUtilities, setSelectedUtilities] = useState([]);
   const [magnetData, setMagnetData] = useState([]);
+  const [ConsoleData, setConsoleData] = useState([]);
+  const [AutosamplerData, setAutosamplerData] = useState([]);
+  const [CPPandCRPData, setCPPandCRPData] = useState([]);
   const [summaryData, setSummaryData] = useState({
     Magnet: selectedMagnet,
     Console: selectedConsole,
@@ -618,11 +634,13 @@ export default function App() {
   // ✅ navigateBack 함수 추가
   const navigateBack = () => {
     if (prevScreens.length > 0) {
-      const lastScreen = prevScreens.pop(); // 🔹 마지막으로 저장된 화면 가져오기
+      const lastScreen = prevScreens[prevScreens.length - 1]; // 🔄 pop() 대신 직접 접근
       console.log("🔙 이전 화면으로 이동:", lastScreen);
       setScreen(lastScreen);
+      setPrevScreens(prevScreens.slice(0, -1)); // 마지막 항목 제거
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -645,6 +663,12 @@ export default function App() {
         setSelectedUtilities={setSelectedUtilities}
         magnetData={magnetData}
         setMagnetData={setMagnetData}
+        ConsoleData={ConsoleData}
+        setConsoleData={setConsoleData}
+        AutosamplerData={AutosamplerData}
+        setAutosamplerData={setAutosamplerData}
+        CPPandCRPData={CPPandCRPData}
+        setCPPandCRPData={setCPPandCRPData}
         summaryData={summaryData}
         setSummaryData={setSummaryData}
       />
