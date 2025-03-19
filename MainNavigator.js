@@ -4,7 +4,7 @@ import styles from "./styles"; // ✅ 스타일 파일 불러오기
 
 // ✅ props를 올바르게 받아서 처리
 const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMagnet, setSelectedMagnet }) => {
-  console.log("📌 MainNavigator가 받은 props:", { screen, setScreen, navigateTo, navigateBack, selectedMagnet });
+  console.log("📌 MainNavigator가 받은 props:", { selectedMagnet });
 
   if (!screen) {
     console.error("❌ screen 값이 undefined입니다!");
@@ -91,7 +91,7 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMa
       {screen === "AutoSampler" && (
         <View>
           <Text style={styles.title}>Magnet</Text>
-          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+          {["Sample Case 24", "Sample Case Plus", "Sample Case Heated & Cooled", "Sample Jet", ].map(item => (
             <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("CPPandCRP")}>
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
@@ -107,7 +107,7 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMa
       {screen === "CPPandCRP" && (
         <View>
           <Text style={styles.title}>Magnet</Text>
-          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+          {["Prodigy", "LN2dewar", "CU", "Outdoor", "indoor", "Water Cooled"].map(item => (
             <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("utilities")}>
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
@@ -123,7 +123,7 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMa
       {screen === "utilities" && (
         <View>
           <Text style={styles.title}>Magnet</Text>
-          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
+          {["UPS", "Compressor", "Air dryer", ].map(item => (
             <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("summary")}>
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
@@ -136,43 +136,28 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMa
           </TouchableOpacity>
         </View>
       )}
-      {screen === "utilities" && (
+     
+            {/* 🛠 Summary 화면 */}
+      {screen === "summary" && (
         <View>
-          <Text style={styles.title}>Magnet</Text>
-          {["Liquid", "Solid", "HR-MAS", "Prodigy", "CryoProbe"].map(item => (
-            <TouchableOpacity key={item} style={styles.menuItem} onPress={() => setScreen("summary")}>
-              <Text style={styles.menuText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("ACPPandCRP")}>
+          <Text style={styles.title}>Summary</Text>
+          <View style={styles.summaryTable}>
+            {Object.entries(summaryData).map(([key, value], index) => (
+              <View key={index} style={styles.row}>
+              <Text style={[styles.cellSummaryHeader, { flex: 3, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
+              <Text style={[styles.cellSummary, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
+            </View>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("utilities")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("summary")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("final")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
+      
         </View>
       )}
-            {/* 🛠 Summary 화면 */}
-        {screen === "summary" && (
-          <View>
-            <Text style={styles.title}>Summary</Text>
-            <View style={styles.summaryTable}>
-              {Object.entries(summaryData).map(([key, value], index) => (
-                <View key={index} style={styles.row}>
-                <Text style={[styles.cellSummaryHeader, { flex: 3, borderRightWidth: 1, borderRightColor: "#ddd", paddingRight: 10 }]}>{key}</Text>
-                <Text style={[styles.cellSummary, { flex: 3, paddingLeft: 10 }]}>{value}</Text>
-              </View>
-              ))}
-            </View>
-            <TouchableOpacity style={styles.button} onPress={() => setScreen("utilities")}>
-              <Text style={styles.buttonText}>Back</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => setScreen("final")}>
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
-        
-          </View>
-        )}
         {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
           
         {screen === "final" && selectedMagnet && (
