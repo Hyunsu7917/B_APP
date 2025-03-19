@@ -466,6 +466,128 @@ const copyExcelToLocal = async () => {
 
   return fileUri;
 };
+export default function App() {
+  const [screen, setScreen] = useState("home");
+  const [prevScreens, setPrevScreens] = useState([]);
+  const [selectedMagnet, setSelectedMagnet] = useState(null);
+  const [selectedConsole, setSelectedConsole] = useState(null);
+  const [selectedProbes, setSelectedProbes] = useState([]);
+  const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
+  const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
+  const [selectedUtilities, setSelectedUtilities] = useState([]);
+  const [magnetData, setMagnetData] = useState([]);
+  const [consoleData, setConsoleData] = useState([]);
+  const [autosamplerData, setAutoSamplerData] = useState([]);
+  const [cppandcrpData, setCPPandCRPData] = useState([]);
+  const [summaryData, setSummaryData] = useState({
+    Magnet: selectedMagnet,
+    Console: selectedConsole,
+    Probes: selectedProbes,
+    AutoSampler: selectedAutoSampler,
+    CPPandCRP: selectedCPPandCRP,
+    Utilities: selectedUtilities,
+  });
+
+  console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
+  
+
+  useEffect(() => {
+    if (screen === undefined || screen === null) {
+      console.error("❌ screen 값이 undefined 또는 null입니다!");
+    } else {
+      console.log("✅ 정상적인 screen 값:", screen);
+    }
+  }, [screen]);
+
+  // ✅ navigateTo 함수 추가
+  const navigateTo = (nextScreen) => {
+    console.log("📌 현재 화면(screen):", screen);
+    console.log("🔄 저장되는 prevScreens 값:", [...prevScreens, screen]);
+
+    setPrevScreens([...prevScreens, screen]); // 🔹 현재 화면을 이전 화면 목록에 추가
+    setScreen(nextScreen);
+  };
+
+  // ✅ navigateBack 함수 추가
+  const navigateBack = () => {
+    if (prevScreens.length > 0) {
+      const lastScreen = prevScreens[prevScreens.length - 1]; // 🔄 pop() 대신 직접 접근
+      console.log("🔙 이전 화면으로 이동:", lastScreen);
+      setScreen(lastScreen);
+      setPrevScreens(prevScreens.slice(0, -1)); // 마지막 항목 제거
+    }
+  };
+
+  console.log("🚀 App.js에서 MainNavigator로 보내는 props:", {
+    screen,
+    setScreen,
+    navigateTo,
+    navigateBack,
+    selectedMagnet,
+    setSelectedMagnet
+  });
+  
+  return (
+    <View style={styles.container}>
+      <MainNavigator
+        screen={screen}
+        setScreen={setScreen}
+        navigateTo={navigateTo}
+        navigateBack={navigateBack}
+        selectedMagnet={selectedMagnet}
+        setSelectedMagnet={setSelectedMagnet}
+        selectedConsole={selectedConsole}
+        setSelectedConsole={setSelectedConsole}
+        selectedProbes={selectedProbes}
+        setSelectedProbes={setSelectedProbes}
+        selectedAutoSampler={selectedAutoSampler}
+        setSelectedAutoSampler={setSelectedAutoSampler}
+        selectedCPPandCRP={selectedCPPandCRP}
+        setSelectedCPPandCRP={setSelectedCPPandCRP}
+        selectedUtilities={selectedUtilities}
+        setSelectedUtilities={setSelectedUtilities}
+        magnetData={magnetData}
+        setMagnetData={setMagnetData}
+        consoleData={consoleData}
+        setconsoleData={setConsoleData}
+        autosamplerData={autosamplerData}
+        setautosamplerData={setAutoSamplerData}
+        cppandcrpData={cppandcrpData}
+        setcppandcrpData={setCPPandCRPData}
+        summaryData={summaryData}
+        setSummaryData={setSummaryData}
+      />
+    </View>
+  );
+}
+
+useEffect(() => {
+  if (!screen) {
+    console.warn("⚠️ screen 값이 정의되지 않음!");
+    return;
+  }
+
+  if (screen === "final") {
+    console.log("🔄 useEffect 실행됨! (Final 화면)");
+
+    if (selectedMagnet?.length > 0) {
+      console.log("📌 선택된 Magnet:", selectedMagnet);
+      loadExcelData("Magnet", selectedMagnet, setMagnetData);
+    }
+    if (selectedConsole?.length > 0) {
+      console.log("📌 선택된 Console:", selectedConsole);
+      loadExcelData("Console", selectedConsole, setConsoleData);
+    }
+    if (selectedAutoSampler?.length > 0) {
+      console.log("📌 선택된 AutoSampler:", selectedAutoSampler);
+      loadExcelData("AutoSampler", selectedAutoSampler, setAutoSamplerData);
+    }
+    if (selectedCPPandCRP?.length > 0) {
+      console.log("📌 선택된 CPPandCRP:", selectedCPPandCRP);
+      loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
+    }
+  }
+}, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]);
 
 
 // 📌 파일 업로드 처리 함수
@@ -610,101 +732,6 @@ const processExcelData = (workbook, sheetName, selectedItem, setData = () => {})
   setData(filteredData);
 };
 
-export default function App() {
-  const [screen, setScreen] = useState("home");
-  const [prevScreens, setPrevScreens] = useState([]);
-  const [selectedMagnet, setSelectedMagnet] = useState(null);
-  const [selectedConsole, setSelectedConsole] = useState(null);
-  const [selectedProbes, setSelectedProbes] = useState([]);
-  const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
-  const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
-  const [selectedUtilities, setSelectedUtilities] = useState([]);
-  const [magnetData, setMagnetData] = useState([]);
-  const [consoleData, setConsoleData] = useState([]);
-  const [autosamplerData, setAutoSamplerData] = useState([]);
-  const [cppandcrpData, setCPPandCRPData] = useState([]);
-  const [summaryData, setSummaryData] = useState({
-    Magnet: selectedMagnet,
-    Console: selectedConsole,
-    Probes: selectedProbes,
-    AutoSampler: selectedAutoSampler,
-    CPPandCRP: selectedCPPandCRP,
-    Utilities: selectedUtilities,
-  });
-
-  console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
-  
-
-  useEffect(() => {
-    if (screen === undefined || screen === null) {
-      console.error("❌ screen 값이 undefined 또는 null입니다!");
-    } else {
-      console.log("✅ 정상적인 screen 값:", screen);
-    }
-  }, [screen]);
-
-  // ✅ navigateTo 함수 추가
-  const navigateTo = (nextScreen) => {
-    console.log("📌 현재 화면(screen):", screen);
-    console.log("🔄 저장되는 prevScreens 값:", [...prevScreens, screen]);
-
-    setPrevScreens([...prevScreens, screen]); // 🔹 현재 화면을 이전 화면 목록에 추가
-    setScreen(nextScreen);
-  };
-
-  // ✅ navigateBack 함수 추가
-  const navigateBack = () => {
-    if (prevScreens.length > 0) {
-      const lastScreen = prevScreens[prevScreens.length - 1]; // 🔄 pop() 대신 직접 접근
-      console.log("🔙 이전 화면으로 이동:", lastScreen);
-      setScreen(lastScreen);
-      setPrevScreens(prevScreens.slice(0, -1)); // 마지막 항목 제거
-    }
-  };
-
-  console.log("🚀 App.js에서 MainNavigator로 보내는 props:", {
-    screen,
-    setScreen,
-    navigateTo,
-    navigateBack,
-    selectedMagnet,
-    setSelectedMagnet
-  });
-  
-  return (
-    <View style={styles.container}>
-      <MainNavigator
-        screen={screen}
-        setScreen={setScreen}
-        navigateTo={navigateTo}
-        navigateBack={navigateBack}
-        selectedMagnet={selectedMagnet}
-        setSelectedMagnet={setSelectedMagnet}
-        selectedConsole={selectedConsole}
-        setSelectedConsole={setSelectedConsole}
-        selectedProbes={selectedProbes}
-        setSelectedProbes={setSelectedProbes}
-        selectedAutoSampler={selectedAutoSampler}
-        setSelectedAutoSampler={setSelectedAutoSampler}
-        selectedCPPandCRP={selectedCPPandCRP}
-        setSelectedCPPandCRP={setSelectedCPPandCRP}
-        selectedUtilities={selectedUtilities}
-        setSelectedUtilities={setSelectedUtilities}
-        magnetData={magnetData}
-        setMagnetData={setMagnetData}
-        consoleData={consoleData}
-        setconsoleData={setConsoleData}
-        autosamplerData={autosamplerData}
-        setautosamplerData={setAutoSamplerData}
-        cppandcrpData={cppandcrpData}
-        setcppandcrpData={setCPPandCRPData}
-        summaryData={summaryData}
-        setSummaryData={setSummaryData}
-      />
-    </View>
-  );
-}
-
   console.log("🔥 초기 screen 값:", screen);  // ✅ 앱 실행 전에 screen 상태 확인
   useEffect(() => {
     if (screen === undefined) {
@@ -836,6 +863,17 @@ export default function App() {
     }
   }, [screen, currentStep]);  // ✅ `currentStep` 변경 시 실행
   
+
+  useEffect(() => {
+    setSummaryData({
+      Magnet: selectedMagnet,
+      Console: selectedConsole,
+      Probes: selectedProbes.join(", "), // 배열을 문자열로 변환
+      AutoSampler: selectedAutoSampler.join(", "),
+      CPPandCRP: selectedCPPandCRP.join(", "),
+      Utilities: selectedUtilities.join(", "),
+    });
+  }, [selectedMagnet, selectedConsole, selectedProbes, selectedAutoSampler, selectedCPPandCRP, selectedUtilities]);
   
   const API_URL = "http://192.168.1.13:5000/assets/site.xlsx";
 
