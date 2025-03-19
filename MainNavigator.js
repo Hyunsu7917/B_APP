@@ -4,7 +4,8 @@ import styles from "./styles"; // ✅ 스타일 파일 불러오기
 
 // ✅ props를 올바르게 받아서 처리
 const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMagnet, setSelectedMagnet }) => {
-  console.log("📌 MainNavigator가 받은 props:", { selectedMagnet });
+  console.log("📌 MainNavigator에서 받은 props:", { screen, selectedMagnet });
+
 
   if (!screen) {
     console.error("❌ screen 값이 undefined입니다!");
