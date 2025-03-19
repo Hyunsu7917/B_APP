@@ -600,6 +600,7 @@ export default function App() {
   });
 
   console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
+  
 
   useEffect(() => {
     if (screen === undefined || screen === null) {
@@ -697,6 +698,8 @@ export default function App() {
   
 
   const stepScreens = [
+    "home",
+    "sitePlan",
     "magnet",
     "console",
     "probe",
