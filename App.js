@@ -599,7 +599,15 @@ export default function App() {
     Utilities: selectedUtilities,
   });
 
-  console.log("🔥 초기 screen 값:", screen); // ✅ useState 선언 후 실행
+  console.log("🔥 초기 screen 값:", screen); // ✅ 초기 screen 상태 확인
+
+  useEffect(() => {
+    if (screen === undefined || screen === null) {
+      console.error("❌ screen 값이 undefined 또는 null입니다!");
+    } else {
+      console.log("✅ 정상적인 screen 값:", screen);
+    }
+  }, [screen]);
 
   // ✅ navigateTo 함수 추가
   const navigateTo = (nextScreen) => {
