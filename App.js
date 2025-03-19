@@ -580,10 +580,9 @@ const processExcelData = (workbook, sheetName, selectedItem, setData) => {
   setData(filteredData);
 };
 
-
 export default function App() {
   const [screen, setScreen] = useState("home");
-  const [prevScreens, setPrevScreens] = useState([]); // ✅ 위치 조정
+  const [prevScreens, setPrevScreens] = useState([]);
   const [selectedMagnet, setSelectedMagnet] = useState(null);
   const [selectedConsole, setSelectedConsole] = useState(null);
   const [selectedProbes, setSelectedProbes] = useState([]);
@@ -600,14 +599,33 @@ export default function App() {
     Utilities: selectedUtilities,
   });
 
-  console.log("🔥 초기 screen 값:", screen);
+  console.log("🔥 초기 screen 값:", screen); // ✅ useState 선언 후 실행
+
+  // ✅ navigateTo 함수 추가
+  const navigateTo = (nextScreen) => {
+    console.log("📌 현재 화면(screen):", screen);
+    console.log("🔄 저장되는 prevScreens 값:", [...prevScreens, screen]);
+
+    setPrevScreens([...prevScreens, screen]); // 🔹 현재 화면을 이전 화면 목록에 추가
+    setScreen(nextScreen);
+  };
+
+  // ✅ navigateBack 함수 추가
+  const navigateBack = () => {
+    if (prevScreens.length > 0) {
+      const lastScreen = prevScreens.pop(); // 🔹 마지막으로 저장된 화면 가져오기
+      console.log("🔙 이전 화면으로 이동:", lastScreen);
+      setScreen(lastScreen);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* ✅ MainNavigator에 screen과 setScreen을 props로 전달 */}
       <MainNavigator
         screen={screen}
         setScreen={setScreen}
+        navigateTo={navigateTo}
+        navigateBack={navigateBack}
         selectedMagnet={selectedMagnet}
         setSelectedMagnet={setSelectedMagnet}
         selectedConsole={selectedConsole}
@@ -624,13 +642,11 @@ export default function App() {
         setMagnetData={setMagnetData}
         summaryData={summaryData}
         setSummaryData={setSummaryData}
-        prevScreens={prevScreens}
-        setPrevScreens={setPrevScreens}
       />
     </View>
   );
-
 }
+
 
   console.log("🔥 초기 screen 값:", screen);  // ✅ 앱 실행 전에 screen 상태 확인
   useEffect(() => {

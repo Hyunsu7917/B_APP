@@ -2,7 +2,12 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import styles from "./styles"; // 스타일 파일 불러오기
 
-const MainNavigator = ({ screen, setScreen, navigateBack }) => {
+const MainNavigator = ({ 
+  screen, 
+  setScreen, 
+  navigateTo, 
+  navigateBack 
+}) => {
   return (
     <View style={styles.container}>
       {/* 🏠 홈 화면 */}
