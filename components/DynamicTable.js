@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import DynamicTable from "./components/DynamicTable";
 
 const DynamicTable = ({ title, data }) => {
   if (!data || data.length === 0) {
