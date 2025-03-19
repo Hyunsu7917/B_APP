@@ -25,10 +25,10 @@ const MainNavigator = (props) => {
       {screen === "sitePlan" && (
         <View>
           <Text style={styles.title}>Site Plan</Text>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("home")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("home")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("magnet")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("magnet")}>
             <Text style={styles.buttonText}>자석</Text>
           </TouchableOpacity>
         </View>
@@ -43,10 +43,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("sitePlan")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("sitePlan")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("console")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("console")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
@@ -59,10 +59,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("magnet")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("magnet")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("probe")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("probe")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
@@ -75,10 +75,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("console")}>
+          <TouchableOpacity style={styles.button} onPress={() => snavigateBack("console")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("AutoSampler")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("AutoSampler")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
@@ -91,10 +91,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("probe")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("probe")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("CPPandCRP")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("CPPandCRP")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
@@ -107,10 +107,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("AutoSampler")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("AutoSampler")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("utilities")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("utilities")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
@@ -123,10 +123,10 @@ const MainNavigator = (props) => {
               <Text style={styles.menuText}>{item}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("ACPPandCRP")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateBack("ACPPandCRP")}>
             <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setScreen("summary")}>
+          <TouchableOpacity style={styles.button} onPress={() => navigateTo("summary")}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </View>
