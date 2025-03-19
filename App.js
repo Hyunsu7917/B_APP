@@ -607,6 +607,7 @@ const processExcelData = (workbook, sheetName, selectedItem, setData = () => {})
 
   setData(filteredData);
 };
+const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [prevScreens, setPrevScreens] = useState([]);
@@ -818,9 +819,7 @@ useEffect(() => {
         setPrevScreens(prevScreens.slice(0, -1)); // 🔹 가장 최근의 화면을 제거하여 이전 화면 목록 업데이트
     }
   };
-
   
-  const magnets = ["400core", "400evo", "500evo", "600evo", "700evo"];
   useEffect(() => {
     if (screen === "final") {
       console.log("🛠 useEffect 실행됨! (Final 화면)");
