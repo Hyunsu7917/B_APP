@@ -12,9 +12,10 @@ import * as Notifications from 'expo-notifications';
 import { Buffer } from "buffer";  // 🔥 `react-native-quick-base64` 대신 `buffer` 사용
 import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
-import MainNavigator from "./MainNavigator";
+import MainNavigator from "./MainNavigator";  // ✅ 올바른지 확인!
 import styles from "./styles";
 
+console.log("🔥 App.js 실행됨!")
 // ✅ screen을 먼저 선언한 후 console.log 실행
 const [screen, setScreen] = useState("home");  
 console.log("📌 초기 screen 값:", screen);
