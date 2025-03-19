@@ -420,10 +420,14 @@ const copyExcelToLocal = async () => {
   return fileUri;
 };
 useEffect(() => {
+  if (!screen) {
+    console.warn("⚠️ screen 값이 정의되지 않음!");
+    return;
+  }
+
   if (screen === "final") {
-    console.log("🚀 useEffect 실행됨! (Final 화면)");
+    console.log("🔄 useEffect 실행됨! (Final 화면)");
     
-    // 선택된 항목이 있을 때만 loadExcelData 실행
     if (selectedMagnet) {
       console.log("📌 선택된 Magnet:", selectedMagnet);
       loadExcelData("Magnet", selectedMagnet, setMagnetData);
@@ -437,11 +441,11 @@ useEffect(() => {
       loadExcelData("AutoSampler", selectedAutoSampler, setAutoSamplerData);
     }
     if (selectedCPPandCRP) {
-      console.log("📌 선택된 CPP&CRP:", selectedCPPandCRP);
+      console.log("📌 선택된 CPPandCRP:", selectedCPPandCRP);
       loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
     }
   }
-}, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]); // ✅ 의존성 배열 추가
+}, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]);
 
 // 📌 파일 업로드 처리 함수
 const [fileContent, setFileContent] = useState(null);
