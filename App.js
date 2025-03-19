@@ -856,7 +856,6 @@ export default function App() {
     } catch (error) {
       console.error("❌ 파일 업로드 실패:", error);
     }
-  
-  
+ 
 
 }
