@@ -15,12 +15,13 @@ import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 import MainNavigator from "./MainNavigator";
 import styles from "./styles";
 
+// ✅ screen을 먼저 선언한 후 console.log 실행
+const [screen, setScreen] = useState("home");  
 console.log("📌 초기 screen 값:", screen);
 
 const username = "BBIOK";
 const password = "Bruker_2025";
 const encodedAuth = Buffer.from(`${username}:${password}`).toString("base64");  // 🔥 수정됨!
-
 
 console.log("📂 FileSystem 모듈:", FileSystem);
 
@@ -44,9 +45,14 @@ const checkFileInfo = async () => {
       console.error("❌ 파일 정보 가져오기 실패:", error);
   }
 };
-if (Platform.OS !== "web") {
-  checkFileInfo();
-}
+
+// ✅ useEffect로 실행 시점 조정
+useEffect(() => {
+  if (Platform.OS !== "web") {
+    checkFileInfo();
+  }
+}, []);
+
 console.log("📢 현재 디바이스 정보:", Device);
 console.log("📢 Expo Notifications 지원 여부:", Notifications);
 
@@ -66,6 +72,7 @@ const testDownload = async () => {
     console.error("❌ 파일 다운로드 요청 실패:", error);
   }
 };
+
 const checkForUpdates = async () => {
   try {
     console.log("🔍 업데이트 확인 중...");
@@ -600,7 +607,7 @@ export default function App() {
   const [selectedUtilities, setSelectedUtilities] = useState([]);
   const [magnetData, setMagnetData] = useState([]);
   const [ConsoleData, setConsoleData] = useState([]);
-  const [AutosamplerData, setAutosamplerData] = useState([]);
+  const [AutoSamplerData, setAutoSamplerData] = useState([]);
   const [CPPandCRPData, setCPPandCRPData] = useState([]);
   const [summaryData, setSummaryData] = useState({
     Magnet: selectedMagnet,
@@ -665,8 +672,8 @@ export default function App() {
         setMagnetData={setMagnetData}
         ConsoleData={ConsoleData}
         setConsoleData={setConsoleData}
-        AutosamplerData={AutosamplerData}
-        setAutosamplerData={setAutosamplerData}
+        AutoSamplerData={AutoSamplerData}
+        setAutoSamplerData={setAutoSamplerData}
         CPPandCRPData={CPPandCRPData}
         setCPPandCRPData={setCPPandCRPData}
         summaryData={summaryData}
