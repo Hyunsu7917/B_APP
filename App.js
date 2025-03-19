@@ -426,25 +426,26 @@ useEffect(() => {
 
   if (screen === "final") {
     console.log("🔄 useEffect 실행됨! (Final 화면)");
-    
-    if (selectedMagnet) {
+
+    if (selectedMagnet?.length > 0) {
       console.log("📌 선택된 Magnet:", selectedMagnet);
       loadExcelData("Magnet", selectedMagnet, setMagnetData);
     }
-    if (selectedConsole) {
+    if (selectedConsole?.length > 0) {
       console.log("📌 선택된 Console:", selectedConsole);
       loadExcelData("Console", selectedConsole, setConsoleData);
     }
-    if (selectedAutoSampler) {
+    if (selectedAutoSampler?.length > 0) {
       console.log("📌 선택된 AutoSampler:", selectedAutoSampler);
       loadExcelData("AutoSampler", selectedAutoSampler, setAutoSamplerData);
     }
-    if (selectedCPPandCRP) {
+    if (selectedCPPandCRP?.length > 0) {
       console.log("📌 선택된 CPPandCRP:", selectedCPPandCRP);
       loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
     }
   }
 }, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]);
+
 
 // 📌 파일 업로드 처리 함수
 const [fileContent, setFileContent] = useState(null);
