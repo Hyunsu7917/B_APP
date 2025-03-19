@@ -2,7 +2,8 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import styles from "./styles"; // 스타일 파일 불러오기
 console.log("📝 MainNavigator가 받은 props:", props);
-const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
+const MainNavigator = (props) => {
+  const { screen, setScreen, navigateTo, navigateBack } = props;
   console.log("📌 MainNavigator에서 전달된 screen 값:", screen); // ✅ 추가된 로그
   
   return (
