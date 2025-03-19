@@ -591,6 +591,8 @@ export default function App() {
     CPPandCRP: selectedCPPandCRP,  
     Utilities: selectedUtilities,
   });
+  console.log("🔥 초기 screen 값:", screen);  // ✅ 앱 실행 전에 screen 상태 확인
+
   useEffect(() => {
     setSummaryData((prevData) => ({
       ...prevData,
