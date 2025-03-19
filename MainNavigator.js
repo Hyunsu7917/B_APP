@@ -25,7 +25,7 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack }) => {
           <View>
             <Text style={styles.title}>Site Plan</Text>
             <TouchableOpacity style={styles.button} onPress={navigateBack}><Text style={styles.buttonText}>Back</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => setScreen("magnet")}>
+            <TouchableOpacity style={styles.button} onPress={() => navigateTo("magnet")}>
               <Text style={styles.buttonText}>자석</Text>
             </TouchableOpacity>
           </View>
