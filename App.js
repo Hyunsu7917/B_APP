@@ -14,7 +14,27 @@ import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 import MainNavigator from "./MainNavigator";  // ✅ 올바른지 확인!
 import styles from "./styles";
-const [screen, setScreen] = useState("home");  
+const [screen, setScreen] = useState("home");
+const [PrevScreens, setPrevScreens] = useState([]);
+const [selectedMagnet, setSelectedMagnet] = useState(null);
+const [selectedConsole, setSelectedConsole] = useState(null);
+const [selectedProbes, setSelectedProbes] = useState([]);
+const [selectedAutoSampler, setSelectedAutoSampler] = useState([]);
+const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
+const [selectedUtilities, setSelectedUtilities] = useState([]);
+const [magnetData, setMagnetData] = useState([]);
+const [consoleData, setConsoleData] = useState([]);
+const [AutoSamplerData, setAutoSamplerData] = useState([]);
+const [CPPandCRPData, setCPPandCRPData] = useState([]);
+const [SummaryData, setSummaryData] = useState({
+    Magnet: selectedMagnet,
+    Console: selectedConsole,
+    Probes: selectedProbes,
+    AutoSampler: selectedAutoSampler,
+    CPPandCRP: selectedCPPandCRP,
+    Utilities: selectedUtilities,
+});
+ 
 console.log("📌 초기 screen 값:", screen);
 
 const username = "BBIOK";
