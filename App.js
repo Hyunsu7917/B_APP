@@ -14,6 +14,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 import MainNavigator from "./MainNavigator";  // ✅ 올바른지 확인!
 import styles from "./styles";
+console.log("🔥 App.js 실행됨!");
 const [screen, setScreen] = useState("home");
 const [prevScreens, setPrevScreens] = useState([]);
 const [selectedMagnet, setSelectedMagnet] = useState(null);
@@ -265,6 +266,10 @@ const checkForUpdates = async () => {
       return null;
     }
   };
+    useEffect(() => {
+      console.log("📌 useEffect 실행됨! (엑셀 데이터 로드 관련)");
+    }, []);
+    
   // ✅ `useEffect`로 컴포넌트가 처음 마운트될 때 `downloadFile()` 실행
     useEffect(() => {
         console.log("🚀✅ useEffect 실행됨, downloadFile() 호출 시도!");
@@ -433,10 +438,11 @@ const checkForUpdates = async () => {
           return; 
         }
 
-        console.log("📋 변환된 엑셀 데이터:", jsonData);
+
         if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) { 
           console.error("❌ 엑셀 데이터가 비어 있거나 잘못된 형식입니다.");
         }
+        
         
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || [];
         console.log("📂 변환된 엑셀 데이터:", jsonData);
@@ -444,6 +450,7 @@ const checkForUpdates = async () => {
           console.error("❌ jsonData 변환 실패 또는 빈 배열!");
           return;
         }
+
 
         const headers = jsonData[0];
         const rows = jsonData.slice(1).map(row =>
