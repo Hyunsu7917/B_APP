@@ -34,7 +34,38 @@ const [summaryData, setSummaryData] = useState({
     CPPandCRP: selectedCPPandCRP,
     Utilities: selectedUtilities,
 });
- 
+return (
+  <View style={styles.container}>
+  <MainNavigator
+      screen={screen}
+      setScreen={setScreen}
+      navigateTo={navigateTo}
+      navigateBack={navigateBack}
+      selectedMagnet={selectedMagnet}
+      setSelectedMagnet={setSelectedMagnet}
+      selectedConsole={selectedConsole}
+      setSelectedConsole={setSelectedConsole}
+      selectedProbes={selectedProbes}
+      setSelectedProbes={setSelectedProbes}
+      selectedAutoSampler={selectedAutoSampler}
+      setSelectedAutoSampler={setSelectedAutoSampler}
+      selectedCPPandCRP={selectedCPPandCRP}
+      setSelectedCPPandCRP={setSelectedCPPandCRP}
+      selectedUtilities={selectedUtilities}
+      setSelectedUtilities={setSelectedUtilities}
+      magnetData={magnetData}
+      setMagnetData={setMagnetData}
+      consoleData={consoleData}
+      setconsoleData={setConsoleData}
+      autosamplerData={autosamplerData}
+      setautosamplerData={setAutoSamplerData}
+      cppandcrpData={cppandcrpData}
+      setcppandcrpData={setCPPandCRPData}
+      summaryData={summaryData}
+      setSummaryData={setSummaryData}
+  />
+  </View>
+); 
 console.log("📌 초기 screen 값:", screen);
 
 const username = "BBIOK";
@@ -531,7 +562,18 @@ const checkForUpdates = async () => {
           return;
         }
         console.log("📋 변환된 엑셀 데이터:", jsonData);
-       
+        if (!jsonData || jsonData.length === 0) {
+          console.error(`❌ 엑셀 데이터가 비어 있습니다. (${sheetName})`);
+          return;
+        }
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || []; // ✅ 기본값 빈 배열 추가
+        console.log("📋 변환된 엑셀 데이터:", jsonData);
+
+        if (jsonData.length === 0) { 
+          console.error(`❌ 엑셀 데이터가 비어 있음 (${sheetName})`); 
+          return;
+        }
+
         const headers = jsonData[0];
         const rows = jsonData.slice(1).map(row =>
           Object.fromEntries(headers.map((h, i) => [h, row[i]]))
@@ -605,7 +647,11 @@ const checkForUpdates = async () => {
         navigateTo,
         navigateBack,
         selectedMagnet,
-        setSelectedMagnet
+        setSelectedMagnet,
+        setSelectedConsole,
+        setSelectedProbes,
+        setSelectedAutoSampler,
+        setSelectedUtilities
     });
     
     return (
@@ -627,6 +673,7 @@ const checkForUpdates = async () => {
             setSelectedCPPandCRP={setSelectedCPPandCRP}
             selectedUtilities={selectedUtilities}
             setSelectedUtilities={setSelectedUtilities}
+            setSummaryData={SummaryData}
             magnetData={magnetData}
             setMagnetData={setMagnetData}
             consoleData={consoleData}
