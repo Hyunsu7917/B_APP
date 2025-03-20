@@ -34,38 +34,7 @@ const [summaryData, setSummaryData] = useState({
     CPPandCRP: selectedCPPandCRP,
     Utilities: selectedUtilities,
 });
-return (
-  <View style={styles.container}>
-  <MainNavigator
-      screen={screen}
-      setScreen={setScreen}
-      navigateTo={navigateTo}
-      navigateBack={navigateBack}
-      selectedMagnet={selectedMagnet}
-      setSelectedMagnet={setSelectedMagnet}
-      selectedConsole={selectedConsole}
-      setSelectedConsole={setSelectedConsole}
-      selectedProbes={selectedProbes}
-      setSelectedProbes={setSelectedProbes}
-      selectedAutoSampler={selectedAutoSampler}
-      setSelectedAutoSampler={setSelectedAutoSampler}
-      selectedCPPandCRP={selectedCPPandCRP}
-      setSelectedCPPandCRP={setSelectedCPPandCRP}
-      selectedUtilities={selectedUtilities}
-      setSelectedUtilities={setSelectedUtilities}
-      magnetData={magnetData}
-      setMagnetData={setMagnetData}
-      consoleData={consoleData}
-      setconsoleData={setConsoleData}
-      autosamplerData={autosamplerData}
-      setautosamplerData={setAutoSamplerData}
-      cppandcrpData={cppandcrpData}
-      setcppandcrpData={setCPPandCRPData}
-      summaryData={summaryData}
-      setSummaryData={setSummaryData}
-  />
-  </View>
-); 
+ 
 console.log("📌 초기 screen 값:", screen);
 
 const username = "BBIOK";
@@ -143,9 +112,6 @@ const checkForUpdates = async () => {
   
     fetchUpdates();
   }, []);
-  const arrayBufferToBase64 = (buffer) => {
-    return Buffer.from(new Uint8Array(buffer)).toString('base64');
-  };
   
   const checkForFileUpdate = async () => {
     let fileUri = FileSystem.documentDirectory + "site.xlsx";
@@ -304,66 +270,6 @@ const checkForUpdates = async () => {
         console.log("🚀✅ useEffect 실행됨, downloadFile() 호출 시도!");
         downloadFile();
     }, []);
-    const downloadExcel = async () => {
-        try {
-          console.log("⚡ downloadExcel 함수 실행됨!");
-      
-          if (Platform.OS === "web") {
-            console.log("🌍 웹 환경에서 Excel 파일 다운로드 시작!");
-      
-            console.log("📂 fetch() 실행 전: 서버에서 파일 요청을 보냅니다.");
-            const response = await fetch(FILE_URL, {
-              method: "GET",
-              headers: {
-                "Authorization": `Basic ${encodedAuth}`,
-                "Accept": "*/*"
-              }
-            });
-      
-            console.log("✅ fetch() 실행 후: 서버 응답을 받았습니다.");
-      
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "site.xlsx";  // 📌 다운로드 파일명 지정
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-      
-            console.log("✅ 웹 환경에서 Excel 파일 다운로드 성공!");
-            return;
-          }
-      
-          // 📱 React Native 환경 (파일 시스템을 활용한 다운로드)
-          console.log("📂 ✅ downloadFile() 함수 실행 중...");
-          const fileUri = await downloadFile();
-          console.log("📂 ✅ downloadFile() 완료! 결과:", fileUri);
-      
-          if (!fileUri) {
-            console.error("❌ 파일 다운로드 실패: fileUri가 없음");
-            return;
-          }
-      
-          await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-          console.log("✅ 파일 저장 성공!");
-      
-          // 🔥 저장된 Base64 데이터 확인
-          const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
-          console.log("📂 저장된 Base64 데이터 (앞 100자):", base64.substring(0, 100));
-      
-          const fileInfo = await FileSystem.getInfoAsync(fileUri);
-          console.log("📂 저장된 파일 정보:", fileInfo);
-      
-          if (!fileInfo.exists) {
-            throw new Error("❌ 다운로드한 파일이 존재하지 않습니다.");
-          }
-      
-          console.log("✅ [React Native] downloadExcel 실행 완료!");
-        } catch (error) {
-          console.error("❌ downloadExcel 실패:", error);
-        }
-      };
     const FILE_PATH = FileSystem.documentDirectory + "site.xlsx";  // ✅ 로컬 저장 경로
 
     const copyExcelToLocal = async () => {
@@ -380,42 +286,6 @@ const checkForUpdates = async () => {
             uploadButton.innerText = "📂 엑셀 파일 업로드";
             uploadButton.style = "padding: 10px; margin-top: 10px; display:block;";
 
-            const pickFile = async () => {
-                try {
-                if (Platform.OS === "web") {
-                    // 🌐 웹 환경: input 요소를 사용
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = ".xlsx";
-                    input.onchange = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) {
-                        console.log("❌ 선택된 파일이 없습니다.");
-                        return;
-                    }
-                    console.log("📂 웹에서 선택한 파일:", file);
-                    handleFileUpload(file);
-                    };
-                    input.click();
-                } else {
-                    // 📱 React Native 환경: expo-document-picker 사용
-                    const result = await DocumentPicker.getDocumentAsync({
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    copyToCacheDirectory: true,
-                    });
-            
-                    if (result.canceled) {
-                    console.log("❌ 파일 선택 취소됨");
-                    return;
-                    }
-            
-                    console.log("📂 모바일에서 선택한 파일:", result);
-                    handleFileUpload(result.uri);
-                }
-                } catch (error) {
-                console.error("❌ 파일 선택 중 오류 발생:", error);
-                }
-            };
 
             document.body.appendChild(uploadButton);
             console.log("✅ 파일 업로드 버튼이 추가되었습니다.");
@@ -557,20 +427,21 @@ const checkForUpdates = async () => {
     const processExcelData = (workbook, sheetName, selectedItem, setData = () => {}) => {  // ✅ 기본값 추가
         const sheet = workbook.Sheets[sheetName];
       
-        if (!sheet) {
-          console.error(`❌ 시트 '${sheetName}'를 찾을 수 없습니다.`);
-          return;
+        console.log("📂 sheet 데이터 확인:", sheet);
+        if (!sheet) { 
+          console.error("❌ 시트를 찾을 수 없습니다.");
+          return; 
         }
-        console.log("📋 변환된 엑셀 데이터:", jsonData);
-        if (!jsonData || jsonData.length === 0) {
-          console.error(`❌ 엑셀 데이터가 비어 있습니다. (${sheetName})`);
-          return;
-        }
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || []; // ✅ 기본값 빈 배열 추가
-        console.log("📋 변환된 엑셀 데이터:", jsonData);
 
-        if (jsonData.length === 0) { 
-          console.error(`❌ 엑셀 데이터가 비어 있음 (${sheetName})`); 
+        console.log("📋 변환된 엑셀 데이터:", jsonData);
+        if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) { 
+          console.error("❌ 엑셀 데이터가 비어 있거나 잘못된 형식입니다.");
+        }
+        
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || [];
+        console.log("📂 변환된 엑셀 데이터:", jsonData);
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+          console.error("❌ jsonData 변환 실패 또는 빈 배열!");
           return;
         }
 
@@ -673,7 +544,6 @@ const checkForUpdates = async () => {
             setSelectedCPPandCRP={setSelectedCPPandCRP}
             selectedUtilities={selectedUtilities}
             setSelectedUtilities={setSelectedUtilities}
-            setSummaryData={SummaryData}
             magnetData={magnetData}
             setMagnetData={setMagnetData}
             consoleData={consoleData}
@@ -728,16 +598,6 @@ const checkForUpdates = async () => {
     
     const [currentStep, setCurrentStep] = useState(0);
     
-    const stepScreens = [
-        "home",
-        "sitePlan",
-        "magnet",
-        "console",
-        "probe",
-        "AutoSampler",
-        "cppandcrp",
-        "utilities"
-      ];
       console.log("🚀 초기 screen 상태:", screen); // ✅ 초기값 확인용
       useEffect(() => {
         console.log("📂 Final 화면의 magnetData: ", magnetData);
@@ -750,13 +610,6 @@ const checkForUpdates = async () => {
         }
       }, [selectedMagnet]); // 🔥 selectedMagnet 변경 감지하여 실행
      
-      const toggleSelection = (item, selectedList, setSelectedList) => {
-        if (selectedList.includes(item)) {
-          setSelectedList(selectedList.filter(i => i !== item));
-        } else {
-          setSelectedList([...selectedList, item]);
-        }
-      };
       useEffect(() => {
         if (!screen) {
           console.warn("⚠️ screen 값이 정의되지 않음!");
@@ -780,34 +633,8 @@ const checkForUpdates = async () => {
           }
           if (selectedCPPandCRP?.length > 0) {
             console.log("📌 선택된 CPPandCRP:", selectedCPPandCRP);
-            loadExcelData("CPP&CRP", selectedCPPandCRP, setCppCrpData);
+            loadExcelData("CPP&CRP", selectedCPPandCRP, setCPPandCRPData);
           }
         }
       }, [screen, selectedMagnet, selectedConsole, selectedAutoSampler, selectedCPPandCRP]);
-      const uploadFile = async () => {
-        try {
-          const formData = new FormData();
-          formData.append("file", {
-            uri: "파일 경로",
-            name: "test.xlsx",
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-    
-          console.log("📂 🚀 fetch() 요청을 실행합니다! (파일 다운로드 시작)");
-          const response = await fetch(API_URL, {
-            method: "POST",
-            body: formData,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-    
-          const jsonData = await response.json();
-          console.log("📂 업로드된 데이터:", jsonData);
-        } catch (error) {
-          console.error("❌ 파일 업로드 실패:", error);
-        }
-     
-    
-    }
       
