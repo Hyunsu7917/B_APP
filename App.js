@@ -15,7 +15,7 @@ import { pickFile } from './fileUtils'; // 파일 경로 확인 필요
 import MainNavigator from "./MainNavigator";  // ✅ 올바른지 확인!
 import styles from "./styles";
 const [screen, setScreen] = useState("home");
-const [PrevScreens, setPrevScreens] = useState([]);
+const [prevScreens, setPrevScreens] = useState([]);
 const [selectedMagnet, setSelectedMagnet] = useState(null);
 const [selectedConsole, setSelectedConsole] = useState(null);
 const [selectedProbes, setSelectedProbes] = useState([]);
@@ -24,9 +24,9 @@ const [selectedCPPandCRP, setSelectedCPPandCRP] = useState([]);
 const [selectedUtilities, setSelectedUtilities] = useState([]);
 const [magnetData, setMagnetData] = useState([]);
 const [consoleData, setConsoleData] = useState([]);
-const [AutoSamplerData, setAutoSamplerData] = useState([]);
-const [CPPandCRPData, setCPPandCRPData] = useState([]);
-const [SummaryData, setSummaryData] = useState({
+const [autoSamplerData, setAutoSamplerData] = useState([]);
+const [cppandcrpData, setCPPandCRPData] = useState([]);
+const [summaryData, setSummaryData] = useState({
     Magnet: selectedMagnet,
     Console: selectedConsole,
     Probes: selectedProbes,
@@ -530,27 +530,27 @@ const checkForUpdates = async () => {
           return;
         }
       
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        console.log(`📊 변환된 엑셀 데이터 (${sheetName}):`, jsonData);
-      
-        if (jsonData.length === 0) {
-          console.error(`❌ 엑셀 데이터가 비어 있습니다. (${sheetName})`);
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || []; // ✅ 기본값 빈 배열 추가
+        console.log("📋 변환된 엑셀 데이터:", jsonData);
+
+        if (jsonData.length === 0) { 
+          console.error(`❌ 엑셀 데이터가 비어 있음 (${sheetName})`); 
           return;
         }
-      
+
         const headers = jsonData[0];
         const rows = jsonData.slice(1).map(row =>
           Object.fromEntries(headers.map((h, i) => [h, row[i]]))
         );
       
-        const filteredData = rows.filter(row => (row[sheetName] ?? "").trim() === selectedItem);
-        console.log(`✅ 필터링된 데이터 (${sheetName}):`, filteredData);
-      
-        if (!filteredData || filteredData.length === 0) {
-          console.warn(`⚠️ 필터링된 데이터가 없습니다. (${sheetName})`);
+        const filteredData = rows?.filter(row => (row[sheetName] ?? "").trim() === selectedItem) || []; // ✅ 기본값 빈 배열 추가
+        console.log("✅ 필터링된 데이터:", filteredData);
+        
+        if (filteredData.length === 0) { 
+          console.warn(`⚠️ 필터링된 데이터가 없음. (${sheetName})`); 
           return;
         }
-      
+        
         setData(filteredData);
       };    
     export default function App() {
@@ -681,9 +681,9 @@ const checkForUpdates = async () => {
     useEffect(() => {
     setSummaryData((prevData) => ({
         ...prevData,
-        CPPandCRP: cppcrpData,
+        CPPandCRP: cppandcrpData,
     }));
-    }, [cppcrpData]);
+    }, [cppandcrpData]);
     
     const [currentStep, setCurrentStep] = useState(0);
     
