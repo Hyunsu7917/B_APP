@@ -159,7 +159,8 @@ const MainNavigator = ({ screen, setScreen, navigateTo, navigateBack, selectedMa
         </View>
       )}
         {/* 🛠 Final 화면 - 엑셀 데이터 표 출력 */}
-          
+        console.log("📌 setSelectedMagnet 실행됨:", selectedMagnet);
+
         {screen === "final" && selectedMagnet && (
             <View style={{ flex: 1, width: "100%" }}>
                 <ScrollView 

@@ -455,6 +455,7 @@ const checkForUpdates = async () => {
     const loadExcelData = async (sheetName, selectedItem, setData = () => {}) => {  // ✅ 기본값 추가
     console.log(`🔵 선택된 시트: ${sheetName}, 항목: ${selectedItem}`);
     
+    
     let fileUri = await copyExcelToLocal();
     console.log("📂 읽어올 파일 경로:", fileUri);
     
@@ -529,15 +530,8 @@ const checkForUpdates = async () => {
           console.error(`❌ 시트 '${sheetName}'를 찾을 수 없습니다.`);
           return;
         }
-      
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) || []; // ✅ 기본값 빈 배열 추가
         console.log("📋 변환된 엑셀 데이터:", jsonData);
-
-        if (jsonData.length === 0) { 
-          console.error(`❌ 엑셀 데이터가 비어 있음 (${sheetName})`); 
-          return;
-        }
-
+       
         const headers = jsonData[0];
         const rows = jsonData.slice(1).map(row =>
           Object.fromEntries(headers.map((h, i) => [h, row[i]]))
